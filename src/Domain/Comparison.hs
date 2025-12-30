@@ -11,8 +11,7 @@ import Domain.Types
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 
--- | Cosine similarity between two normalized ETFs.
---   Measures similarity of weight distributions.
+-- cosine similarity between two normalized ETFs
 cosineSimilarity :: NormalizedETF -> NormalizedETF -> Double
 cosineSimilarity (NormalizedETF a) (NormalizedETF b) =
   dot / (norm a * norm b)
@@ -27,13 +26,12 @@ cosineSimilarity (NormalizedETF a) (NormalizedETF b) =
     norm m =
       sqrt . sum $ map (\(Weight w) -> w * w) (Map.elems m)
 
--- | Cosine distance is defined as 1 - cosine similarity.
+-- cosine distance between two normalized ETFs
 cosineDistance :: NormalizedETF -> NormalizedETF -> Double
 cosineDistance a b =
   1.0 - cosineSimilarity a b
 
--- | Weighted Jaccard similarity.
---   Captures overlap magnitude rather than direction.
+-- weighted Jaccard similarity betwen normalied ETFs
 weightedJaccardSimilarity :: NormalizedETF -> NormalizedETF -> Double
 weightedJaccardSimilarity (NormalizedETF a) (NormalizedETF b) =
   intersection / union
@@ -56,13 +54,13 @@ weightedJaccardSimilarity (NormalizedETF a) (NormalizedETF b) =
         , let wb = maybe 0 unWeight (Map.lookup k b)
         ]
 
--- | Complement of weighted Jaccard similarity.
+-- weighted Jaccard distance between two normalized ETFs
 weightedJaccardDistance :: NormalizedETF -> NormalizedETF -> Double
 weightedJaccardDistance a b =
   1.0 - weightedJaccardSimilarity a b
 
--- | Overlap ratio measures how much the smaller ETF
---   is contained in the larger one.
+-- overlap ratio between tow normalized ETFs
+-- ("how much the smaller ETF is contained in the larger one")
 overlapRatio :: NormalizedETF -> NormalizedETF -> Double
 overlapRatio (NormalizedETF a) (NormalizedETF b) =
   intersection / min totalA totalB
