@@ -14,7 +14,10 @@ newtype FundId = FundId { unFundId :: String }
   deriving (Eq, Ord, Show)
 
 -- vendor-agnostic asset identifier
-newtype AssetId = AssetId { unAssetId :: String }
+newtype RawAssetId = RawAssetId  { unRawAssetId :: String }
+  deriving (Eq, Ord, Show)
+
+newtype CanonicalAssetId = CanonicalAssetId  { unCanonicalAssetId :: String }
   deriving (Eq, Ord, Show)
 
 -- holding weight
@@ -23,9 +26,10 @@ newtype Weight = Weight { unWeight :: Double }
 
 -- general holding definition
 data Holding = Holding
-  { holdingAssetId :: AssetId
-  , holdingWeight  :: Weight
-  } deriving (Eq, Show)
+  { holdingRawId        :: RawAssetId
+  , holdingCanonicalId  :: Maybe CanonicalAssetId
+  , holdingWeight       :: Weight
+  }
 
 -- ETF parsed at it is
 data RawETF = RawETF

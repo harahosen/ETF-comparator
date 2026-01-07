@@ -1,17 +1,19 @@
 module Ingestion.FileMeta
-  ( Vendor(..)
+  ( ProviderCode(..)
   , FileFormat(..)
   , FileMeta(..)
-  , inferFileMeta
+  , deriveFileMetadata
   ) where
 
-import System.FilePath (takeExtension, takeFileName)
-import Data.Char (toLower)
+import System.FilePath (takeExtension, takeBaseName)
+import Data.Char (isDigit, toLower)
+import Data.List (splitAt)
 
 -- data provider
-data Provider
-  = IShares
-  | StateStreet
+data ProviderCode
+  = IS   -- iShares
+  | SS   -- State Street
+  | CF   -- Custom File
   deriving (Eq, Show)
 
 -- file format
@@ -20,37 +22,59 @@ data FileFormat
   | XLSX
   deriving (Eq, Show)
 
--- metadata
+-- file metadata
 data FileMeta = FileMeta
-  { fmVendor :: Provider
-  , fmFormat :: FileFormat
-  , fmPath   :: FilePath
+  { fmDate     :: String        -- YYYYMMDD, syntactically validated
+  , fmProvider :: ProviderCode
+  , fmFormat   :: FileFormat
+  , fmPath     :: FilePath
   } deriving (Eq, Show)
 
--- provider and format inference from file name and extension
-inferFileMeta :: FilePath -> Either String FileMeta
-inferFileMeta path =
-  let ext  = map toLower (takeExtension path)
-      name = map toLower (takeFileName path)
-  in case (ext, name) of
-       (".csv", n) | "ivv" `elem` wordsByNonAlpha n ->
-         Right (FileMeta IShares CSV path)
+-- metadata derivation from the filename
+deriveFileMetadata :: FilePath -> Either String FileMeta
+deriveFileMetadata path = do
+  format   <- checkFormat path
+  (d, p)   <- checkFilename path
+  pure FileMeta
+    { fmDate     = d
+    , fmProvider = p
+    , fmFormat   = format
+    , fmPath     = path
+    }
 
-       (".xlsx", n) | "spy" `elem` wordsByNonAlpha n ->
-         Right (FileMeta StateStreet XLSX path)
+checkFormat :: FilePath -> Either String FileFormat
+checkFormat path =
+  case map toLower (takeExtension path) of
+    ".csv"  -> Right CSV
+    ".xlsx" -> Right XLSX
+    ext -> Left ("Unsupported file extension: " <> ext)
 
-       _ ->
-         Left ("Unsupported ETF file: " <> path)
+checkFilename :: FilePath -> Either String (String, ProviderCode)
+checkFilename path =
+  case fileSplit (takeBaseName path) of
+    (dateStr : providerStr : _) -> do
+      checkDate dateStr
+      provider <- parseProvider providerStr
+      Right (dateStr, provider)
+    _ ->
+      Left "Filename must be YYYYMMDD-PROVIDER-<name>"
 
--- splitter of the file name
-wordsByNonAlpha :: String -> [String]
-wordsByNonAlpha =
-  filter (not . null) . split
-  where
-    split [] = []
-    split xs =
-      let (w, rest) = span isAlpha xs
-      in w : case rest of
-               [] -> []
-               (_:rs) -> split rs
-    isAlpha = isAsciiLower
+fileSplit :: String -> [String]
+fileSplit [] = []
+fileSplit xs =
+  let (h, rest) = span (/= '-') xs
+  in h : case rest of
+           [] -> []
+           (_:rs) -> fileSplit rs
+
+checkDate :: String -> Either String ()
+checkDate s
+  | length s == 8 && all isDigit s = Right ()
+  | otherwise = Left ("Invalid date in filename: " <> s)
+
+parseProvider :: String -> Either String ProviderCode
+parseProvider provider = case provider of 
+  "IS" -> Right IS;
+  "SS" -> Right SS;
+  "CF" -> Right CF;
+  p    -> Left ("Unknown provider code: " <> p)

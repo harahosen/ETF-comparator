@@ -9,6 +9,6 @@ import Domain.Types
 -- load of an ETF composition from a file path
 loadETF :: FilePath -> IO (Either String RawETF)
 loadETF path =
-  case inferFileMeta path of
+  case deriveFileMetadata path of
     Left err -> pure (Left err)
     Right meta -> Right <$> routeETF meta
