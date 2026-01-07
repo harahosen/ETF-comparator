@@ -1,21 +1,23 @@
--- Parser/Preprocess/IShares.hs
-module Parser.Preprocess.IShares
-  ( preprocessIShares
+module Parser.IShares
+  ( parseIShares
   ) where
 
 import Parser.Common.Table
-import Parser.Preprocess.Common
+import Parser.Common.ParserHelpers
+import Domain.Types
 
-preprocessIShares :: Table -> Either String Table
-preprocessIShares rows = do
-  (headerIndex, header) <- findHeader rows
+parseIShares :: FundId -> Table -> Either String RawETF
+parseIShares fundId (header : rows) = do
+  assetIx  <- findFirstCol assetCols header
+  weightIx <- findFirstCol weightCols header
+  holdings <- parseHoldings assetIx weightIx rows
+  Right (RawETF fundId holdings)
 
-  let colCount = length header
-      body =
-        takeWhile (isDataRow colCount)
-        . drop (headerIndex + 1)
-        $ rows
+parseIShares _ [] =
+  Left "IShares: empty table"
 
-  if null body
-     then Left "IShares: no holdings rows found"
-     else Right (header : body)
+assetCols :: [String]
+assetCols = ["isin", "ticker", "symbol"]
+
+weightCols :: [String]
+weightCols = ["weight"]
