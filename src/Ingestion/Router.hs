@@ -1,28 +1,19 @@
 module Ingestion.Router
-  ( routeETF
+  ( route
   ) where
 
 import Ingestion.FileMeta
-import Domain.Types
+import Parser.IShares
+import Parser.StateStreet
+import Parser.Custom
 
-import qualified Parser.IShares as IS
-import qualified Parser.StateStreet as SS
-import qualified Parser.Custom as CF
-
-routeETF :: FileMeta -> IO RawETF
-routeETF meta =
-  case (fmProvider meta, fmFormat meta) of
-
-    (IS, CSV) ->
-      IS.parseISharesCSV (fmPath meta)
-
-    (SS, XLSX) ->
-      SS.parseStateStreetXLSX (fmPath meta)
-
-    (CF, CSV) ->
-      CF.parseCustomCSV (fmPath meta)
-
-    (provider, format) ->
-      fail $
-        "Unsupported provider/format combination: "
-        <> show provider <> " / " <> show format
+route
+  :: FileMeta
+  -> ([[Text]] -> Either String [[Text]])  -- preprocessor
+  -> ([[Text]] -> Either String RawETF)     -- parser
+route meta =
+  case (provider meta, format meta) of
+    (IS, CSV)   -> (preprocessIShares, parseIShares fundId)
+    (SS, XLSX)  -> (preprocessStateStreet, parseStateStreet fundId)
+    (CF, CSV)   -> (preprocessCustom, parseCustom fundId)
+    _           -> error "Unsupported provider/format"

@@ -2,22 +2,46 @@ module Parser.StateStreet
   ( parseStateStreet
   ) where
 
-import Parser.Common.Table
-import Parser.Common.ParserHelpers
 import Domain.Types
+import Parser.Common.ParserHelpers
+import Data.Text (Text)
 
-findFirstCol :: [String] -> Row -> Either String Int
-findFirstCol keys row =
-  case findIndex (matchesAny keys) row of
-    Nothing -> Left ("Missing required column: " ++ show keys)
-    Just i  -> Right i
+type Table = [[Text]]
+
+assetPriority :: [Text]
+assetPriority =
+  [ "isin"
+  , "ticker"
+  , "symbol"
+  , "name"
+  ]
+
+weightPriority :: [Text]
+weightPriority =
+  [ "weight"
+  , "weight %"
+  , "weight (%)"
+  , "weight(%)"
+  , "market weight"
+  ]
 
 parseStateStreet :: FundId -> Table -> Either String RawETF
 parseStateStreet fundId (header : rows) = do
-  assetIx  <- findFirstCol assetCols header
-  weightIx <- findWeightCol header
+  assetIx  <- findColumnByPriority assetPriority header
+  weightIx <- findColumnByPriority weightPriority header
   holdings <- traverse (parseRow assetIx weightIx) rows
   Right (RawETF fundId holdings)
-parseStateStreet _ [] =
-  Left "StateStreet: empty table"
 
+parseStateStreet _ [] =
+  Left "StateStreet parser: empty table"
+
+parseRow :: Int -> Int -> [Text] -> Either String Holding
+parseRow assetIx weightIx row = do
+  asset <- maybe (Left "Missing asset id") Right (safeIndex assetIx row)
+  wtxt  <- maybe (Left "Missing weight") Right (safeIndex weightIx row)
+  w     <- parseDouble wtxt
+  Right (Holding (RawAssetId asset) (Weight w) Nothing)
+
+safeIndex :: Int -> [a] -> Maybe a
+safeIndex i xs =
+  if i < length xs then Just (xs !! i) else Nothing

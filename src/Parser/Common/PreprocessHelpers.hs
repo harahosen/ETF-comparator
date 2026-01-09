@@ -1,51 +1,20 @@
 module Parser.Common.PreprocessHelpers
-  ( assetIdKeywords
-  , weightKeywords
-  , isHeaderRow
-  , isDataRow
-  , findHeader
+  ( dropEmptyRows
+  , trimTable
   ) where
 
-import Parser.Common.Table
-import Data.Char (toLower)
-import Data.List (findIndex, isInfixOf)
+import Data.Text (Text)
+import qualified Data.Text as T
 
-assetIdKeywords :: [String]
-assetIdKeywords =
-  [ "isin"
-  , "ticker"
-  , "symbol"
-  , "security"
-  , "cusip"
-  ]
+-- | Drop rows that are entirely empty or whitespace
+dropEmptyRows :: [[Text]] -> [[Text]]
+dropEmptyRows =
+  filter (not . all (T.null . T.strip))
 
-weightKeywords :: [String]
-weightKeywords =
-  [ "weight"
-  , "market weight"
-  , "notional weight"
-  ]
-
-normalize :: String -> String
-normalize = map toLower
-
-containsAny :: [String] -> String -> Bool
-containsAny keywords cell =
-  let cell' = normalize cell
-  in any (`isInfixOf` cell') keywords
-
-isHeaderRow :: Row -> Bool
-isHeaderRow row =
-     any (containsAny assetIdKeywords) row
-  && any (containsAny weightKeywords) row
-
-isDataRow :: Int -> Row -> Bool
-isDataRow expectedCols row =
-  length row == expectedCols
-  && not (all null row)
-
-findHeader :: Table -> Either String (Int, Row)
-findHeader rows =
-  case findIndex isHeaderRow rows of
-    Nothing -> Left "Holdings header not found"
-    Just i  -> Right (i, rows !! i)
+-- | Trim leading and trailing empty rows
+trimTable :: [[Text]] -> [[Text]]
+trimTable =
+  dropWhileEnd isEmpty . dropWhile isEmpty
+  where
+    isEmpty = all (T.null . T.strip)
+    dropWhileEnd p = reverse . dropWhile p . reverse

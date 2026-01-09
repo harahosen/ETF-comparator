@@ -1,23 +1,14 @@
-module Parser.IShares
-  ( parseIShares
+module Parser.Preprocess.IShares
+  ( preprocessIShares
   ) where
 
-import Parser.Common.Table
-import Parser.Common.ParserHelpers
-import Domain.Types
+import Parser.Common.PreprocessHelpers
+import Data.Text (Text)
 
-parseIShares :: FundId -> Table -> Either String RawETF
-parseIShares fundId (header : rows) = do
-  assetIx  <- findFirstCol assetCols header
-  weightIx <- findFirstCol weightCols header
-  holdings <- parseHoldings assetIx weightIx rows
-  Right (RawETF fundId holdings)
+type Table = [[Text]]
 
-parseIShares _ [] =
-  Left "IShares: empty table"
-
-assetCols :: [String]
-assetCols = ["isin", "ticker", "symbol"]
-
-weightCols :: [String]
-weightCols = ["weight"]
+preprocessIShares :: Table -> Either String Table
+preprocessIShares table =
+  case trimTable (dropEmptyRows table) of
+    [] -> Left "IShares preprocess: empty table after cleaning"
+    t -> Right t

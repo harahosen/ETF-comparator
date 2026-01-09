@@ -1,27 +1,27 @@
 module Domain.Merge
-  ( mergeHoldings
+  ( mergeResolvedHoldings
   ) where
 
-import qualified Data.Map.Strict as M
 import Domain.Types
+import qualified Data.Map.Strict as M
 
-mergeHoldings :: [Holding] -> [Holding]
-mergeHoldings =
-  M.elems . foldr insertHolding M.empty
+-- | Merge holdings that have a canonical asset id.
+--   Holdings without canonical ids are left untouched.
+mergeResolvedHoldings :: RawETF -> RawETF
+mergeResolvedHoldings (RawETF fundId holdings) =
+  RawETF fundId (merged ++ unresolved)
   where
-    insertHolding h acc =
-      case holdingCanonicalId h of
-        Just cid ->
-          M.insertWith mergeByWeight cid h acc
-        Nothing ->
-          -- unresolved assets are kept separate
-          accWithRawFallback h acc
+    (resolved, unresolved) = partition hasCanonicalId holdings
 
-    mergeByWeight h1 h2 = h1 { holdingWeight = sumWeights (holdingWeight h1) (holdingWeight h2) }
+    merged =
+      M.elems $
+        M.fromListWith mergeHolding
+          [ (cid, h)
+          | h@(Holding _ _ (Just cid)) <- resolved
+          ]
 
-    sumWeights (Weight w1) (Weight w2) =
-      Weight (w1 + w2)
+    mergeHolding h1 h2 =
+      h1 { holdingWeight = holdingWeight h1 <> holdingWeight h2 }
 
--- unresolved assets are not merged
-accWithRawFallback :: Holding -> M.Map CanonicalAssetId Holding -> M.Map CanonicalAssetId Holding
-accWithRawFallback h acc = acc
+hasCanonicalId :: Holding -> Bool
+hasCanonicalId = isJust . holdingCanonicalId
