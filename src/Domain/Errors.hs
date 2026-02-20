@@ -5,14 +5,15 @@ module Domain.Errors
   , DomainError(..)
   ) where
 
-import Domain.Types (AssetId)
+
+import Domain.Types (CanonicalAssetId)
 
 -- errors for malformed or inconsistent input.
 data ValidationError
   = EmptyHoldings
-  | NegativeWeight AssetId
-  | DuplicateHolding AssetId
-  | NonFiniteWeight AssetId
+  | NegativeWeight CanonicalAssetId
+  | DuplicateHolding CanonicalAssetId
+  | NonFiniteWeight CanonicalAssetId
   deriving (Eq, Show)
 
 -- errors for mathematically inconsistent compositions
@@ -21,12 +22,10 @@ data NormalizationError
   | InvalidTotalWeight Double
   deriving (Eq, Show)
 
-{-
--- errors not expected at the moment, commented or now
 data ComparisonError
-  = IncompatibleUniverse
+  = WeightMismatch CanonicalAssetId
+  | MissingAsset CanonicalAssetId
   deriving (Eq, Show)
--}
 
 -- pattern-matching on error origin for higher layers
 data DomainError

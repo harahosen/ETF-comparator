@@ -4,6 +4,7 @@ module Parser.Custom
 
 import Domain.Types
 import Parser.Common.ParserHelpers
+import qualified Data.Text as T
 import Data.Text (Text)
 
 type Table = [[Text]]
@@ -23,7 +24,7 @@ parseRow assetIx weightIx row = do
   asset <- maybe (Left "Missing asset id") Right (safeIndex assetIx row)
   wtxt <- maybe (Left "Missing weight") Right (safeIndex weightIx row)
   w <- parseDouble wtxt
-  Right (Holding (RawAssetId asset) (Weight w) Nothing)
+  Right (Holding (RawAssetId (T.unpack asset)) Nothing (Weight w))
 
 safeIndex :: Int -> [a] -> Maybe a
 safeIndex i xs =

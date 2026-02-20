@@ -25,8 +25,8 @@ normalizeETF (RawETF _ hs)
       Right $
         NormalizedETF $
           Map.fromList
-            [ (holdingAssetId h, Weight (unWeight (holdingWeight h) / total))
-            | h <- hs
+            [ (cid, Weight (unWeight (holdingWeight h) / total))
+            | h <- hs, Just cid <- [holdingCanonicalId h]
             ]
   where
     total = totalWeight hs

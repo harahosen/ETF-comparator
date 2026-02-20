@@ -4,6 +4,8 @@ module Domain.Merge
 
 import Domain.Types
 import qualified Data.Map.Strict as M
+import Data.List (partition)
+import Data.Maybe (isJust)
 
 -- | Merge holdings that have a canonical asset id.
 --   Holdings without canonical ids are left untouched.
@@ -17,7 +19,7 @@ mergeResolvedHoldings (RawETF fundId holdings) =
       M.elems $
         M.fromListWith mergeHolding
           [ (cid, h)
-          | h@(Holding _ _ (Just cid)) <- resolved
+          | h@(Holding _ (Just cid) _) <- resolved
           ]
 
     mergeHolding h1 h2 =

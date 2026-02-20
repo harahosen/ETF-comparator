@@ -35,11 +35,19 @@ ruleNonEmpty :: ValidationRule
 ruleNonEmpty []  = Left [EmptyHoldings]
 ruleNonEmpty _   = Right ()
 
--- returns a list of DuplicateHolding errors, one per duplicated AssetId
+-- returns a list of DuplicateHolding errors, one per duplicated CanonicalAssetId
 checkDuplicatesAll :: ValidationRule
 checkDuplicatesAll hs =
-  let counts :: Map.Map AssetId Int
-      counts = foldl' (\m (Holding aid _) -> Map.insertWith (+) aid 1 m) Map.empty hs
+  let counts :: Map CanonicalAssetId Int
+      counts =
+        foldl'
+          (\m h ->
+            case holdingCanonicalId h of
+              Just cid -> Map.insertWith (+) cid 1 m
+              Nothing  -> m
+          )
+          Map.empty
+          hs
 
       duplicates :: [ValidationError]
       duplicates =
@@ -61,7 +69,10 @@ checkWeightsAll hs =
 
 -- validation for a single holding weight: returns a list with zero or one ValidationError.
 checkWeightList :: Holding -> [ValidationError]
-checkWeightList (Holding aid (Weight w))
-  | isNaN w  = [NonFiniteWeight aid]
-  | w < 0    = [NegativeWeight aid]
-  | otherwise = []
+checkWeightList h =
+  case (holdingCanonicalId h, holdingWeight h) of
+    (Just cid, Weight w)
+      | isNaN w -> [NonFiniteWeight cid]
+      | w < 0   -> [NegativeWeight cid]
+      | otherwise -> []
+    _ -> []

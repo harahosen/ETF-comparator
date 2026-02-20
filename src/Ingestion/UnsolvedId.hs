@@ -3,6 +3,7 @@ module Ingestion.UnsolvedId
   ) where
 
 import Domain.Types
+import Control.Monad (unless)
 
 reportUnsolved :: FundId -> [RawAssetId] -> IO ()
 reportUnsolved fundId ids =

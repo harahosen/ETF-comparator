@@ -1,6 +1,9 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Domain.Types
   ( FundId(..)
-  , AssetId(..)
+  , RawAssetId(..)
+  , CanonicalAssetId(..)
   , Weight(..)
   , Holding(..)
   , RawETF(..)
@@ -22,14 +25,20 @@ newtype CanonicalAssetId = CanonicalAssetId  { unCanonicalAssetId :: String }
 
 -- holding weight
 newtype Weight = Weight { unWeight :: Double }
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Num)
+
+instance Semigroup Weight where
+  (<>) = (+)
+
+instance Monoid Weight where
+  mempty = 0
 
 -- general holding definition
 data Holding = Holding
   { holdingRawId        :: RawAssetId
   , holdingCanonicalId  :: Maybe CanonicalAssetId
   , holdingWeight       :: Weight
-  }
+  } deriving (Eq, Show)
 
 -- ETF parsed at it is
 data RawETF = RawETF
@@ -42,5 +51,5 @@ data RawETF = RawETF
 -- 2. weights sum to 1 (within tolerance)
 -- 3. weights are non-negative and finite
 newtype NormalizedETF =
-  NormalizedETF (Map AssetId Weight)
+  NormalizedETF (Map CanonicalAssetId Weight)
   deriving (Eq, Show)
