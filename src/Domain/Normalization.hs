@@ -6,7 +6,7 @@ module Domain.Normalization
 import Domain.Types
 import Domain.Errors
 
-import qualified Data.Map.Strict as Map
+import qualified Data.Map.Strict as M
 
 -- tolerance for floating-point comparisons
 epsilon :: Double
@@ -24,7 +24,7 @@ normalizeETF (RawETF _ hs)
   | otherwise =
       Right $
         NormalizedETF $
-          Map.fromList
+          M.fromList
             [ (cid, Weight (unWeight (holdingWeight h) / total))
             | h <- hs, Just cid <- [holdingCanonicalId h]
             ]
@@ -51,6 +51,6 @@ isNormalizedRaw (RawETF _ hs) =
 
 assertNormalized :: NormalizedETF -> Either NormalizationError ()
 assertNormalized (NormalizedETF m)
-  | weightsSumToOne (Map.elems m) = Right ()
+  | weightsSumToOne (M.elems m) = Right ()
   | otherwise = Left InvalidNormalization
 -}

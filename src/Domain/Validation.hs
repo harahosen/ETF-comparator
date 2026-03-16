@@ -5,7 +5,7 @@ module Domain.Validation
 import Domain.Types
 import Domain.Errors
 
-import qualified Data.Map.Strict as Map
+import qualified Data.Map.Strict as M
 import Data.List (foldl')
 import Prelude hiding (isNaN)
 import GHC.Float (isNaN)
@@ -38,21 +38,21 @@ ruleNonEmpty _   = Right ()
 -- returns a list of DuplicateHolding errors, one per duplicated CanonicalAssetId
 checkDuplicatesAll :: ValidationRule
 checkDuplicatesAll hs =
-  let counts :: Map CanonicalAssetId Int
+  let counts :: M.Map CanonicalAssetId Int
       counts =
         foldl'
           (\m h ->
             case holdingCanonicalId h of
-              Just cid -> Map.insertWith (+) cid 1 m
+              Just cid -> M.insertWith (+) cid 1 m
               Nothing  -> m
           )
-          Map.empty
+          M.empty
           hs
 
       duplicates :: [ValidationError]
       duplicates =
         [ DuplicateHolding aid
-        | (aid, c) <- Map.toList counts
+        | (aid, c) <- M.toList counts
         , c > 1
         ]
   in if null duplicates

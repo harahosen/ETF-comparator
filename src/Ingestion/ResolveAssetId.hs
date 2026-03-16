@@ -4,6 +4,7 @@ module Ingestion.ResolveAssetId
 
 import Domain.Types
 import Ingestion.AssetIdMapping
+import Data.Either (partitionEithers)
 
 resolveETFAssetIds :: AssetIdMapping -> RawETF -> (RawETF, [RawAssetId])
 resolveETFAssetIds mapping (RawETF fid hs) =

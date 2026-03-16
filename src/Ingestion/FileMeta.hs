@@ -7,7 +7,6 @@ module Ingestion.FileMeta
 
 import System.FilePath (takeExtension, takeBaseName)
 import Data.Char (isDigit, toLower)
-import Data.List (splitAt)
 
 -- data provider
 data ProviderCode

@@ -1,6 +1,6 @@
 module Ingestion.AssetIdMapping
   ( AssetIdMapping
-  , resolve
+  , resolveAssetId
   ) where
 
 import qualified Data.Map.Strict as M
@@ -10,5 +10,5 @@ type AssetIdMapping =M.Map RawAssetId CanonicalAssetId
 
 -- | Resolves raw asset identifiers into canonical ids
 --   Resolution order is defined by mapping construction.
-resolve :: AssetIdMapping -> RawAssetId -> Maybe CanonicalAssetId
-resolve = M.lookup
+resolveAssetId :: AssetIdMapping -> RawAssetId -> Maybe CanonicalAssetId
+resolveAssetId m rawId = M.lookup rawId m

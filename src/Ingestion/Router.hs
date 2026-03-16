@@ -6,14 +6,18 @@ import Ingestion.FileMeta
 import Parser.IShares
 import Parser.StateStreet
 import Parser.Custom
-import Domain.Types (RawETF)
+import Parser.Preprocess.IShares
+import Parser.Preprocess.StateStreet
+import Parser.Preprocess.Custom
+import Domain.Types (RawETF,FundId)
 import Data.Text (Text)
 
-route
-  :: FoundId -> FileMeta
-  -> ([[Text]] -> Either String [[Text]])  -- preprocessor
-  -> ([[Text]] -> Either String RawETF)     -- parser
-route meta =
+type Table = [[Text]]
+type Preprocessor = Table -> Either String Table
+type Parser = Table -> Either String RawETF
+
+route :: FundId -> FileMeta -> (Preprocessor, Parser)
+route fundId meta =
   case (fmProvider meta, fmFormat meta) of
     (IS, CSV)   -> (preprocessIShares, parseIShares fundId)
     (SS, XLSX)  -> (preprocessStateStreet, parseStateStreet fundId)

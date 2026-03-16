@@ -8,7 +8,7 @@ module Domain.Comparison
 
 import Domain.Types
 
-import qualified Data.Map.Strict as Map
+import qualified Data.Map.Strict as M
 import qualified Data.Set as Set
 
 -- cosine similarity between two normalized ETFs
@@ -19,12 +19,12 @@ cosineSimilarity (NormalizedETF a) (NormalizedETF b) =
     dot =
       sum
         [ unWeight wa * unWeight wb
-        | (k, wa) <- Map.toList a
-        , Just wb <- [Map.lookup k b]
+        | (k, wa) <- M.toList a
+        , Just wb <- [M.lookup k b]
         ]
 
     norm m =
-      sqrt . sum $ map (\(Weight w) -> w * w) (Map.elems m)
+      sqrt . sum $ map (\(Weight w) -> w * w) (M.elems m)
 
 -- cosine distance between two normalized ETFs
 cosineDistance :: NormalizedETF -> NormalizedETF -> Double
@@ -36,22 +36,22 @@ weightedJaccardSimilarity :: NormalizedETF -> NormalizedETF -> Double
 weightedJaccardSimilarity (NormalizedETF a) (NormalizedETF b) =
   intersection / union
   where
-    keys = Set.union (Map.keysSet a) (Map.keysSet b)
+    keys = Set.union (M.keysSet a) (M.keysSet b)
 
     intersection =
       sum
         [ min wa wb
         | k <- Set.toList keys
-        , let wa = maybe 0 unWeight (Map.lookup k a)
-        , let wb = maybe 0 unWeight (Map.lookup k b)
+        , let wa = maybe 0 unWeight (M.lookup k a)
+        , let wb = maybe 0 unWeight (M.lookup k b)
         ]
 
     union =
       sum
         [ max wa wb
         | k <- Set.toList keys
-        , let wa = maybe 0 unWeight (Map.lookup k a)
-        , let wb = maybe 0 unWeight (Map.lookup k b)
+        , let wa = maybe 0 unWeight (M.lookup k a)
+        , let wb = maybe 0 unWeight (M.lookup k b)
         ]
 
 -- weighted Jaccard distance between two normalized ETFs
@@ -68,9 +68,9 @@ overlapRatio (NormalizedETF a) (NormalizedETF b) =
     intersection =
       sum
         [ min wa wb
-        | (k, Weight wa) <- Map.toList a
-        , Just (Weight wb) <- [Map.lookup k b]
+        | (k, Weight wa) <- M.toList a
+        , Just (Weight wb) <- [M.lookup k b]
         ]
 
-    totalA = sum (map unWeight (Map.elems a))
-    totalB = sum (map unWeight (Map.elems b))
+    totalA = sum (map unWeight (M.elems a))
+    totalB = sum (map unWeight (M.elems b))
