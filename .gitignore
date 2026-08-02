@@ -1,0 +1,38 @@
+# Cabal build artifacts
+dist-newstyle/
+dist/
+
+# Stack
+.stack-work/
+
+# GHC build files
+*.hi
+*.o
+
+# GHCi
+*.ghci
+
+# Profiling
+*.prof
+*.hp
+
+# Coverage
+*.tix
+*.mix
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# HLS
+.hie/
+
+# Cabal generated files
+cabal.project.local
