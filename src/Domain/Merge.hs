@@ -10,8 +10,8 @@ import Data.Maybe (isJust)
 -- | Merge holdings that have a canonical asset id.
 --   Holdings without canonical ids are left untouched.
 mergeResolvedHoldings :: RawETF -> RawETF
-mergeResolvedHoldings (RawETF fundId holdings) =
-  RawETF fundId (merged ++ unresolved)
+mergeResolvedHoldings (RawETF rawFundId maybeCanonicalFundId holdings) =
+  RawETF rawFundId maybeCanonicalFundId (merged ++ unresolved)
   where
     (resolved, unresolved) = partition hasCanonicalId holdings
 

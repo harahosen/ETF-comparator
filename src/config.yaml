@@ -1,0 +1,5 @@
+assetMappingFile: "data/asset-mapping.csv"
+inputDirectory: "data/input"
+outputDirectory: "data/output"
+tolerance: 0.000001
+failOnUnresolved: false

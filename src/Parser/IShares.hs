@@ -26,15 +26,35 @@ weightPriority =
   , "market weight"
   ]
 
-parseIShares :: FundId -> Table -> Either String RawETF
-parseIShares fundId (header : rows) = do
+fundIdPriority :: [Text]
+fundIdPriority =
+  [ "fund"
+  , "fund name"
+  , "etf"
+  , "etf name"
+  , "ticker"
+  , "symbol"
+  ]
+
+parseIShares :: Table -> Either String RawETF
+parseIShares (header : rows) = do
+  fundId <- extractFundId header rows
   assetIx <- findColumnByPriority assetPriority header
   weightIx <- findColumnByPriority weightPriority header
   holdings <- traverse (parseRow assetIx weightIx) rows
-  Right (RawETF fundId holdings)
+  Right (RawETF fundId Nothing holdings)
 
-parseIShares _ [] =
+parseIShares [] =
   Left "IShares parser: empty table"
+
+extractFundId :: [Text] -> [[Text]] -> Either String RawFundId
+extractFundId header rows = do
+  fundIx <- findColumnByPriority fundIdPriority header
+  case rows of
+    (firstRow : _) -> case safeIndex fundIx firstRow of
+      Just fundText -> Right (RawFundId (T.unpack fundText))
+      Nothing -> Left "Missing fund ID in first data row"
+    [] -> Left "No data rows available for fund ID extraction"
 
 parseRow :: Int -> Int -> [Text] -> Either String Holding
 parseRow assetIx weightIx row = do

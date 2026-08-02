@@ -1,0 +1,35 @@
+name: etf-comparator
+version: 0.1.0.0
+# license:
+# author:
+# maintainer:
+description: ETF composition comparison tool
+
+
+default-extensions:
+  - OverloadedStrings
+  - DeriveGeneric
+  - RecordWildCards
+
+dependencies:
+  - base >= 4.14 && < 5
+  - containers
+  - text
+  - bytestring
+  - vector
+  - cassava
+  - filepath
+  - directory
+  - mtl
+  - yaml
+
+library:
+  source-dirs: src
+
+tests:
+  etf-comparator-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - etf-comparator
+      - hspec

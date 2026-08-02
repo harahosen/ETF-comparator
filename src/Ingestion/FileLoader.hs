@@ -15,8 +15,7 @@ type Table = [[Text]]
 loadETF :: FilePath -> IO (Either String RawETF)
 loadETF path = runExceptT $ do
   meta <- ExceptT (pure (deriveFileMetadata path))
-  table <- liftIO (loadTable path)
-  let fundId = FundId (fmDate meta)
-      (pre, parse) = route fundId meta
+  table <- liftIO (loadTable meta)
+  let (pre, parse) = route meta
   cleaned <- ExceptT (pure (pre table))
   ExceptT (pure (parse cleaned))

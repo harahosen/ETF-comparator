@@ -1,0 +1,85 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           etf-comparator
+version:        0.1.0.0
+description:    ETF composition comparison tool
+build-type:     Simple
+
+library
+  main-is: Main.hs
+  source-dirs: Service
+  exposed-modules:
+      Domain.Comparison
+      Domain.Errors
+      Domain.Merge
+      Domain.Normalization
+      Domain.Types
+      Domain.Validation
+      Ingestion.AssetIdMapping
+      Ingestion.FileMeta
+      Ingestion.Loader
+      Ingestion.ResolveAssetId
+      Ingestion.Router
+      Ingestion.UnsolvedId
+      Parser.Common.ParserHelpers
+      Parser.Common.PreprocessHelpers
+      Parser.Custom
+      Parser.IShares
+      Parser.Preprocess.Custom
+      Parser.Preprocess.IShares
+      Parser.Preprocess.StateStreet
+      Parser.StateStreet
+  other-modules:
+      Paths_etf_comparator
+  hs-source-dirs:
+      src
+  default-extensions:
+      OverloadedStrings
+      DeriveGeneric
+      RecordWildCards
+  build-depends:
+      base >=4.14 && <5
+    , bytestring
+    , cassava
+    , containers
+    , directory
+    , filepath
+    , mtl
+    , text
+    , vector
+    , etf-comparator
+    , yaml
+    , xlsx
+  default-language: Haskell2010
+
+test-suite etf-comparator-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Parser.CustomSpec
+      Parser.ISharesSpec
+      Parser.StateStreetSpec
+      Paths_etf_comparator
+  hs-source-dirs:
+      test
+  default-extensions:
+      OverloadedStrings
+      DeriveGeneric
+      RecordWildCards
+  build-depends:
+      base >=4.14 && <5
+    , bytestring
+    , cassava
+    , containers
+    , directory
+    , etf-comparator
+    , filepath
+    , hspec
+    , mtl
+    , text
+    , vector
+  default-language: Haskell2010

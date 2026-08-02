@@ -1,25 +1,26 @@
-module Parser.CustomSpec (spec) where
+module Parser.StateStreetSpec (spec) where
 
 import Test.Hspec
-import Parser.Custom
+import Parser.StateStreet
 import Domain.Types
 
 spec :: Spec
 spec = do
-  describe "Parser.Custom" $ do
-    it "parses a simple custom ETF table" $ do
+  describe "Parser.StateStreet" $ do
+    it "parses a simple StateStreet ETF table" $ do
       let table =
-            [ ["assetId", "weight"]
-            , ["AAPL", "0.6"]
-            , ["MSFT", "0.4"]
+            [ ["fund", "ticker", "weight"]
+            , ["TEST", "AAPL", "0.6"]
+            , ["TEST", "MSFT", "0.4"]
             ]
 
-      let result = parseCustom (FundId "TEST") table
+      let result = parseStateStreet table
 
       result `shouldBe`
         Right
           (RawETF
-            (FundId "TEST")
+            (RawFundId "TEST")
+            Nothing
             [ Holding (RawAssetId "AAPL") (Weight 0.6) Nothing
             , Holding (RawAssetId "MSFT") (Weight 0.4) Nothing
             ])

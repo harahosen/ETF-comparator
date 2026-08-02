@@ -20,6 +20,8 @@ data ValidationError
 data NormalizationError
   = ZeroTotalWeight
   | InvalidTotalWeight Double
+  | MissingCanonicalFundId
+  | UnresolvedHoldings Int  -- Number of holdings without canonical IDs
   deriving (Eq, Show)
 
 data ComparisonError

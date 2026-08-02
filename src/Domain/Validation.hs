@@ -12,7 +12,7 @@ import GHC.Float (isNaN)
 
 -- same RawETF if OK, collection of validation errors if KO
 validateRawETF :: RawETF -> Either [ValidationError] RawETF
-validateRawETF etf@(RawETF _ hs) =
+validateRawETF etf@(RawETF _ _ hs) =
   etf <$ runRules hs validationRules
 
 -- validation rule: returns zero or more errors
@@ -70,9 +70,13 @@ checkWeightsAll hs =
 -- validation for a single holding weight: returns a list with zero or one ValidationError.
 checkWeightList :: Holding -> [ValidationError]
 checkWeightList h =
-  case (holdingCanonicalId h, holdingWeight h) of
-    (Just cid, Weight w)
-      | isNaN w -> [NonFiniteWeight cid]
-      | w < 0   -> [NegativeWeight cid]
+  case holdingWeight h of
+    Weight w
+      | isNaN w -> [NonFiniteWeight (getCanonicalId h)]
+      | w < 0   -> [NegativeWeight (getCanonicalId h)]
       | otherwise -> []
-    _ -> []
+  where
+    getCanonicalId :: Holding -> CanonicalAssetId
+    getCanonicalId h = case holdingCanonicalId h of
+      Just cid -> cid
+      Nothing -> CanonicalAssetId (unRawAssetId (holdingRawId h))

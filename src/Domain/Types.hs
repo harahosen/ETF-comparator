@@ -1,7 +1,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Domain.Types
-  ( FundId(..)
+  ( RawFundId(..)
+  , CanonicalFundId(..)
   , RawAssetId(..)
   , CanonicalAssetId(..)
   , Weight(..)
@@ -12,14 +13,19 @@ module Domain.Types
 
 import Data.Map.Strict (Map)
 
--- vendor-agnostic ETF identifier (ISIN, tiket, code, name... whatever)
-newtype FundId = FundId { unFundId :: String }
+-- vendor-specific ETF fund identifier
+newtype RawFundId = RawFundId { unRawFundId :: String }
   deriving (Eq, Ord, Show)
 
--- vendor-agnostic asset identifier
+-- vendor-agnostic ETF fund identifier
+newtype CanonicalFundId = CanonicalFundId { unCanonicalFundId :: String }
+  deriving (Eq, Ord, Show)
+
+-- vendor-specific asset identifier
 newtype RawAssetId = RawAssetId  { unRawAssetId :: String }
   deriving (Eq, Ord, Show)
 
+-- vendor-agnostic asset identifier
 newtype CanonicalAssetId = CanonicalAssetId  { unCanonicalAssetId :: String }
   deriving (Eq, Ord, Show)
 
@@ -42,14 +48,16 @@ data Holding = Holding
 
 -- ETF parsed at it is
 data RawETF = RawETF
-  { etfFundId   :: FundId
-  , etfHoldings :: [Holding]
+  { etfRawFundId        :: RawFundId
+  , etfCanonicalFundId  :: Maybe CanonicalFundId
+  , etfHoldings         :: [Holding]
   } deriving (Eq, Show)
 
 -- ETF after validation and normalization:
 -- 1. unique assetId
 -- 2. weights sum to 1 (within tolerance)
 -- 3. weights are non-negative and finite
-newtype NormalizedETF =
-  NormalizedETF (Map CanonicalAssetId Weight)
-  deriving (Eq, Show)
+data NormalizedETF = NormalizedETF
+  { normalizedFundId  :: CanonicalFundId
+  , normalizedAssets :: Map CanonicalAssetId Weight
+  } deriving (Eq, Show)

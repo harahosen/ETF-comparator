@@ -1,5 +1,6 @@
 module Domain.Normalization
   ( normalizeETF
+  , normalizeETFWithTolerance
   , isNormalized
   ) where
 
@@ -7,6 +8,7 @@ import Domain.Types
 import Domain.Errors
 
 import qualified Data.Map.Strict as M
+import Data.Maybe (isJust)
 
 -- tolerance for floating-point comparisons
 epsilon :: Double
@@ -14,22 +16,41 @@ epsilon = 1e-6
 
 -- check if an ETF is already normalized
 isNormalized :: RawETF -> Bool
-isNormalized (RawETF _ hs) =
+isNormalized (RawETF _ _ hs) =
   abs (totalWeight hs - 1.0) < epsilon
 
 -- ETF normalization (total holdings weight = 1)
 normalizeETF :: RawETF -> Either NormalizationError NormalizedETF
-normalizeETF (RawETF _ hs)
-  | total <= 0 = Left ZeroTotalWeight
+normalizeETF = normalizeETFWithTolerance epsilon
+
+-- ETF normalization with custom tolerance
+normalizeETFWithTolerance :: Double -> RawETF -> Either NormalizationError NormalizedETF
+normalizeETFWithTolerance tolerance (RawETF _ maybeCanonicalFundId hs)
+  | originalTotal <= 0 = Left ZeroTotalWeight
   | otherwise =
-      Right $
-        NormalizedETF $
-          M.fromList
-            [ (cid, Weight (unWeight (holdingWeight h) / total))
-            | h <- hs, Just cid <- [holdingCanonicalId h]
-            ]
+      case maybeCanonicalFundId of
+        Nothing -> Left MissingCanonicalFundId
+        Just canonicalFundId ->
+          let resolvedOnly = [h | h <- hs, isJust (holdingCanonicalId h)]
+              unresolvedCount = length hs - length resolvedOnly
+              resolvedTotal = totalWeight resolvedOnly
+              resolvedPairs = [(cid, holdingWeight h) | h <- resolvedOnly, Just cid <- [holdingCanonicalId h]]
+          in if null resolvedOnly
+             then Left (UnresolvedHoldings unresolvedCount)
+             else if abs (resolvedTotal - 1.0) <= tolerance
+               then Right $ NormalizedETF
+                    { normalizedFundId = canonicalFundId
+                    , normalizedAssets = M.fromList resolvedPairs
+                    }
+               else Right $ NormalizedETF
+                    { normalizedFundId = canonicalFundId
+                    , normalizedAssets = M.fromList
+                        [ (cid, Weight (unWeight weight / resolvedTotal))
+                        | (cid, weight) <- resolvedPairs
+                        ]
+                    }
   where
-    total = totalWeight hs
+    originalTotal = totalWeight hs
 
 -- sum of all weights
 totalWeight :: [Holding] -> Double

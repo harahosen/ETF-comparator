@@ -9,17 +9,18 @@ spec = do
   describe "Parser.Custom" $ do
     it "parses a simple custom ETF table" $ do
       let table =
-            [ ["assetId", "weight"]
-            , ["AAPL", "0.6"]
-            , ["MSFT", "0.4"]
+            [ ["fundId", "assetId", "weight"]
+            , ["TEST", "AAPL", "0.6"]
+            , ["TEST", "MSFT", "0.4"]
             ]
 
-      let result = parseCustom (FundId "TEST") table
+      let result = parseCustom table
 
       result `shouldBe`
         Right
           (RawETF
-            (FundId "TEST")
+            (RawFundId "TEST")
+            Nothing
             [ Holding (RawAssetId "AAPL") (Weight 0.6) Nothing
             , Holding (RawAssetId "MSFT") (Weight 0.4) Nothing
             ])
