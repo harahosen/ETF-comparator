@@ -9,17 +9,17 @@ import Parser.Custom
 import Parser.Preprocess.IShares
 import Parser.Preprocess.StateStreet
 import Parser.Preprocess.Custom
-import Domain.Types (RawETF)
+import Domain.Types (RawETF, FundId)
 import Data.Text (Text)
 
 type Table = [[Text]]
 type Preprocessor = Table -> Either String Table
 type Parser = Table -> Either String RawETF
 
-route :: FileMeta -> (Preprocessor, Parser)
-route meta =
+route :: FundId -> FileMeta -> (Preprocessor, Parser)
+route fundId meta =
   case (fmProvider meta, fmFormat meta) of
-    (IS, CSV)   -> (preprocessIShares, parseIShares)
-    (SS, XLSX)  -> (preprocessStateStreet, parseStateStreet)
-    (CF, CSV)   -> (preprocessCustom, parseCustom)
+    (IS, CSV)   -> (preprocessIShares, parseIShares fundId)
+    (SS, XLSX)  -> (preprocessStateStreet, parseStateStreet fundId)
+    (CF, CSV)   -> (preprocessCustom, parseCustom fundId)
     _           -> error "Unsupported provider/format"

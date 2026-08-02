@@ -12,7 +12,6 @@ import System.Directory (getCurrentDirectory)
 
 data Config = Config
   { assetMappingFile :: FilePath  -- Path to asset ID mapping CSV file
-  , fundMappingFile  :: FilePath  -- Path to fund ID mapping CSV file
   , inputDirectory   :: FilePath  -- Mock: Input directory for ETF files (currently unused)
   , outputDirectory  :: FilePath  -- Mock: Output directory for processed ETF files (currently unused)
   , tolerance        :: Double    -- Tolerance for floating-point comparisons in normalization
@@ -24,7 +23,6 @@ instance FromJSON Config
 defaultConfig :: Config
 defaultConfig = Config
   { assetMappingFile = "data/asset-mapping.csv"
-  , fundMappingFile  = "data/fund-mapping.csv"
   , inputDirectory  = "./data/input"
   , outputDirectory = "./data/output"
   , tolerance       = 1e-6

@@ -16,7 +16,7 @@ epsilon = 1e-6
 
 -- check if an ETF is already normalized
 isNormalized :: RawETF -> Bool
-isNormalized (RawETF _ _ hs) =
+isNormalized (RawETF _ hs) =
   abs (totalWeight hs - 1.0) < epsilon
 
 -- ETF normalization (total holdings weight = 1)
@@ -25,30 +25,22 @@ normalizeETF = normalizeETFWithTolerance epsilon
 
 -- ETF normalization with custom tolerance
 normalizeETFWithTolerance :: Double -> RawETF -> Either NormalizationError NormalizedETF
-normalizeETFWithTolerance tolerance (RawETF _ maybeCanonicalFundId hs)
+normalizeETFWithTolerance tolerance (RawETF _ hs)
   | originalTotal <= 0 = Left ZeroTotalWeight
   | otherwise =
-      case maybeCanonicalFundId of
-        Nothing -> Left MissingCanonicalFundId
-        Just canonicalFundId ->
-          let resolvedOnly = [h | h <- hs, isJust (holdingCanonicalId h)]
-              unresolvedCount = length hs - length resolvedOnly
-              resolvedTotal = totalWeight resolvedOnly
-              resolvedPairs = [(cid, holdingWeight h) | h <- resolvedOnly, Just cid <- [holdingCanonicalId h]]
-          in if null resolvedOnly
-             then Left (UnresolvedHoldings unresolvedCount)
-             else if abs (resolvedTotal - 1.0) <= tolerance
-               then Right $ NormalizedETF
-                    { normalizedFundId = canonicalFundId
-                    , normalizedAssets = M.fromList resolvedPairs
-                    }
-               else Right $ NormalizedETF
-                    { normalizedFundId = canonicalFundId
-                    , normalizedAssets = M.fromList
-                        [ (cid, Weight (unWeight weight / resolvedTotal))
-                        | (cid, weight) <- resolvedPairs
-                        ]
-                    }
+      let resolvedOnly = [h | h <- hs, isJust (holdingCanonicalId h)]
+          unresolvedCount = length hs - length resolvedOnly
+          resolvedTotal = totalWeight resolvedOnly
+          resolvedPairs = [(cid, holdingWeight h) | h <- resolvedOnly, Just cid <- [holdingCanonicalId h]]
+      in if null resolvedOnly
+         then Left (UnresolvedHoldings unresolvedCount)
+         else if abs (resolvedTotal - 1.0) <= tolerance
+           then Right $ NormalizedETF (M.fromList resolvedPairs)
+           else Right $ NormalizedETF
+                (M.fromList
+                  [ (cid, Weight (unWeight weight / resolvedTotal))
+                  | (cid, weight) <- resolvedPairs
+                  ])
   where
     originalTotal = totalWeight hs
 

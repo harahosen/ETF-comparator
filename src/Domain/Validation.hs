@@ -12,7 +12,7 @@ import GHC.Float (isNaN)
 
 -- same RawETF if OK, collection of validation errors if KO
 validateRawETF :: RawETF -> Either [ValidationError] RawETF
-validateRawETF etf@(RawETF _ _ hs) =
+validateRawETF etf@(RawETF _ hs) =
   etf <$ runRules hs validationRules
 
 -- validation rule: returns zero or more errors

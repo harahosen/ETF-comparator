@@ -9,18 +9,17 @@ spec = do
   describe "Parser.StateStreet" $ do
     it "parses a simple StateStreet ETF table" $ do
       let table =
-            [ ["fund", "ticker", "weight"]
-            , ["TEST", "AAPL", "0.6"]
-            , ["TEST", "MSFT", "0.4"]
+            [ ["ticker", "weight"]
+            , ["AAPL", "0.6"]
+            , ["MSFT", "0.4"]
             ]
 
-      let result = parseStateStreet table
+      let result = parseStateStreet (FundId "TEST") table
 
       result `shouldBe`
         Right
           (RawETF
-            (RawFundId "TEST")
-            Nothing
+            (FundId "TEST")
             [ Holding (RawAssetId "AAPL") (Weight 0.6) Nothing
             , Holding (RawAssetId "MSFT") (Weight 0.4) Nothing
             ])

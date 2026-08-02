@@ -7,8 +7,8 @@ import Ingestion.AssetIdMapping
 import Data.Either (partitionEithers)
 
 resolveETFAssetIds :: AssetIdMapping -> RawETF -> (RawETF, [RawAssetId])
-resolveETFAssetIds mapping (RawETF rawFundId maybeCanonicalFundId hs) =
-  (RawETF rawFundId maybeCanonicalFundId resolved, unresolved)
+resolveETFAssetIds mapping (RawETF fundId hs) =
+  (RawETF fundId resolved, unresolved)
   where
     (resolved, unresolved) =
       partitionEithers (map resolve hs)

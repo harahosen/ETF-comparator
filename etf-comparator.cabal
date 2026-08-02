@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.39.6.
 --
 -- see: https://github.com/sol/hpack
 
@@ -10,8 +10,6 @@ description:    ETF composition comparison tool
 build-type:     Simple
 
 library
-  main-is: Main.hs
-  source-dirs: Service
   exposed-modules:
       Domain.Comparison
       Domain.Errors
@@ -20,10 +18,12 @@ library
       Domain.Types
       Domain.Validation
       Ingestion.AssetIdMapping
+      Ingestion.FileLoader
       Ingestion.FileMeta
-      Ingestion.Loader
+      Ingestion.MappingLoader
       Ingestion.ResolveAssetId
       Ingestion.Router
+      Ingestion.TableLoader
       Ingestion.UnsolvedId
       Parser.Common.ParserHelpers
       Parser.Common.PreprocessHelpers
@@ -33,6 +33,9 @@ library
       Parser.Preprocess.IShares
       Parser.Preprocess.StateStreet
       Parser.StateStreet
+      Service.Config
+      Service.Main
+      Service.Pipeline
   other-modules:
       Paths_etf_comparator
   hs-source-dirs:
@@ -48,12 +51,12 @@ library
     , containers
     , directory
     , filepath
+    , lens
     , mtl
     , text
     , vector
-    , etf-comparator
-    , yaml
     , xlsx
+    , yaml
   default-language: Haskell2010
 
 test-suite etf-comparator-test
@@ -79,7 +82,10 @@ test-suite etf-comparator-test
     , etf-comparator
     , filepath
     , hspec
+    , lens
     , mtl
     , text
     , vector
+    , xlsx
+    , yaml
   default-language: Haskell2010
