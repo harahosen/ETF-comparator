@@ -47,7 +47,7 @@ data RawETF = RawETF
   } deriving (Eq, Show)
 
 -- ETF after validation and normalization:
--- 1. unique AssetId
+-- 1. unique assetId
 -- 2. weights sum to 1 (within tolerance)
 -- 3. weights are non-negative and finite
 newtype NormalizedETF =

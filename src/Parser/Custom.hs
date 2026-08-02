@@ -11,7 +11,7 @@ type Table = [[Text]]
 
 parseCustom :: FundId -> Table -> Either String RawETF
 parseCustom fundId (header : rows) = do
-  assetIx <- findColumnByPriority ["assetid"] header
+  assetIx <- findColumnByPriority ["assetId"] header
   weightIx <- findColumnByPriority ["weight"] header
   holdings <- traverse (parseRow assetIx weightIx) rows
   Right (RawETF fundId holdings)

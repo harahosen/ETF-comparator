@@ -8,6 +8,7 @@ import Ingestion.TableLoader
 import Domain.Types
 import Control.Monad.Except
 import Control.Monad.IO.Class (liftIO)
+import Data.Text (Text)
 
 type Table = [[Text]]
 
