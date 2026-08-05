@@ -1,7 +1,8 @@
 module Service.PipelineSpec (spec) where
 
 import Test.Hspec
-import Service.Pipeline (ComparisonMetrics(..), ComparisonResult(..), PipelineError(..))
+import Service.Config (loadConfigFromFile)
+import Service.Pipeline (ComparisonMetrics(..), ComparisonResult(..), PipelineError(..), processComparisonWithConfig)
 
 spec :: Spec
 spec = do
@@ -39,3 +40,17 @@ spec = do
             weightedJaccardSimilarityValue m `shouldBe` 0.7
             overlapRatioValue m `shouldBe` 0.6
           _ -> expectationFailure "Should extract metrics"
+
+      it "reports an invalid filename as a single LoadPE error and nothing else" $ do
+        config <- either (error . ("Config: " ++)) return =<< loadConfigFromFile "test/config.yaml"
+        result <- processComparisonWithConfig config "test/input/invalid-name.csv" "test/input/20260105-CF-correct.csv"
+        case result of
+          ComparisonError [(err, failedFile, allErrors)] -> do
+            failedFile `shouldBe` "test/input/invalid-name.csv"
+            length allErrors `shouldBe` 1
+            case allErrors of
+              [LoadPE loadErr] -> do
+                err `shouldBe` loadErr
+                take 12 loadErr `shouldBe` "Invalid date"
+              _ -> expectationFailure "Should contain exactly one LoadPE error"
+          _ -> expectationFailure "Should be ComparisonError with a single filename error"

@@ -6,6 +6,7 @@ import Service.Pipeline (ComparisonMetrics(..))
 import Domain.Errors (PipelineError(..))
 import System.FilePath ((</>))
 import System.Directory (createDirectoryIfMissing, doesFileExist, getDirectoryContents, removePathForcibly)
+import Data.List (isInfixOf)
 
 
 spec :: Spec
@@ -52,6 +53,20 @@ spec = do
           let expectedFile = outputDir </> "error-demo-error.csv"
           fileExists <- doesFileExist expectedFile
           fileExists `shouldBe` True
+
+        it "produces the expected header and JSON error_list" $ do
+          let outputDir = "test" </> "output"
+          let errorList = [LoadPE "Validation error"]
+          errOut <- mkErrorOutput "test/input/20260101-IS-tech.csv" errorList
+          writeErrorOutput outputDir "json" errOut
+          content <- readFile (outputDir </> "error-json.csv")
+          let rows = lines content
+          case rows of
+            (header:_) -> header `shouldBe` "timestamp,error_file,error_list"
+            []         -> expectationFailure "Expected at least one row"
+          content `shouldSatisfy` isInfixOf "test/input/20260101-IS-tech.csv"
+          content `shouldSatisfy` isInfixOf "Load"
+          content `shouldSatisfy` isInfixOf "Validation error"
 
 -- Helper function to clean output folder before tests
 cleanupOutputFolder :: IO ()

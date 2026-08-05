@@ -37,3 +37,16 @@ tests:
       - hspec
     other-modules:
       - DemoComparison
+      - Domain.ComparisonSpec
+      - Domain.MergeSpec
+      - Domain.NormalizationSpec
+      - Domain.ValidationSpec
+      - Ingestion.FileLoaderSpec
+      - Ingestion.FileMetaSpec
+      - Ingestion.MappingLoaderSpec
+      - Ingestion.ResolveAssetIdSpec
+      - Parser.CustomSpec
+      - Parser.ISharesSpec
+      - Parser.StateStreetSpec
+      - Service.OutputWriterSpec
+      - Service.PipelineSpec
