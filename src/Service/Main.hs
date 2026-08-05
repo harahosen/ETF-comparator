@@ -1,7 +1,7 @@
 module Service.Main where
 
 import Service.Config (loadConfigFromFile, defaultConfig, Config(..))
-import Service.Pipeline (processComparison, processComparisonWithConfig, processComparisonWithOutput, ComparisonResult(..), ComparisonMetrics(..))
+import Service.Pipeline (processComparison, processComparisonWithConfig, ComparisonResult(..), ComparisonMetrics(..))
 import Service.OutputWriter (OutputResult(..), mkComparisonOutput, mkErrorOutput, writeOutput)
 import System.Environment (getArgs)
 import System.Exit (exitFailure, exitSuccess)

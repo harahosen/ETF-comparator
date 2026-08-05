@@ -6,8 +6,6 @@ import Service.Pipeline (ComparisonMetrics(..))
 import Domain.Errors (PipelineError(..))
 import System.FilePath ((</>))
 import System.Directory (createDirectoryIfMissing, doesFileExist, getDirectoryContents, removePathForcibly)
-import qualified Data.ByteString.Char8 as BC
-import qualified Data.ByteString.Lazy as LBS
 
 
 spec :: Spec

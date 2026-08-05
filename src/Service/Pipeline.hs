@@ -4,12 +4,11 @@ module Service.Pipeline
   , PipelineError(..)
   , processComparison
   , processComparisonWithConfig
-  , processComparisonWithOutput
   ) where
 
 import Service.Config
 import Domain.Types
-import Domain.Errors (PipelineError(..), ValidationError, NormalizationError)
+import Domain.Errors (PipelineError(..))
 import Domain.Validation (validateRawETF, validateRawETFAllErrors)
 import Domain.Normalization (normalizeETFWithTolerance)
 import Domain.Merge
@@ -135,34 +134,3 @@ processComparisonWithConfig config file1 file2 = do
 
 processComparison :: FilePath -> FilePath -> IO ComparisonResult
 processComparison = processComparisonWithConfig defaultConfig
-
--- Extended version that returns detailed output information
-processComparisonWithOutput :: Config -> FilePath -> FilePath -> IO (Either [(String, FilePath, [PipelineError])] (ComparisonMetrics, [(String, [String])]))
-processComparisonWithOutput config file1 file2 = do
-  -- Process both ETFs separately to track which one fails
-  result1 <- processSingleETFWithErrors config file1
-  result2 <- processSingleETFWithErrors config file2
-
-  case (result1, result2) of
-    (Right (etf1, unresolved1, fundId1, _), Right (etf2, unresolved2, fundId2, _)) -> do
-      -- Both succeeded, perform comparison
-      let cosSim = cosineSimilarity etf1 etf2
-          jacSim = weightedJaccardSimilarity etf1 etf2
-          overlap = overlapRatio etf1 etf2
-          unresolved = [(unFundId fundId1, map unRawAssetId unresolved1),
-                        (unFundId fundId2, map unRawAssetId unresolved2)]
-
-      return $ Right (ComparisonMetrics
-        { cosineSimilarityValue = cosSim
-        , weightedJaccardSimilarityValue = jacSim
-        , overlapRatioValue = overlap
-        }, unresolved)
-
-    (Left (firstError, allErrors), Right _) ->
-      return $ Left [(firstError, file1, allErrors)]
-
-    (Right _, Left (firstError, allErrors)) ->
-      return $ Left [(firstError, file2, allErrors)]
-
-    (Left (firstError1, allErrors1), Left (firstError2, allErrors2)) ->
-      return $ Left [(firstError1, file1, allErrors1), (firstError2, file2, allErrors2)]

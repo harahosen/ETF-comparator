@@ -1,8 +1,6 @@
 module Domain.Errors
   ( ValidationError(..)
   , NormalizationError(..)
-  , ComparisonError(..)
-  , DomainError(..)
   , PipelineError(..)
   ) where
 
@@ -26,18 +24,6 @@ data NormalizationError
   | UnresolvedHoldings Int  -- Number of holdings without canonical IDs
   deriving (Eq, Show)
 
-data ComparisonError
-  = WeightMismatch CanonicalAssetId
-  | MissingAsset CanonicalAssetId
-  deriving (Eq, Show)
-
--- pattern-matching on error origin for higher layers
-data DomainError
-  = ValidationErr ValidationError
-  | NormalizationErr NormalizationError
-  deriving (Eq, Show)
---  | ComparisonErr ComparisonError
-
 -- | Normalized error representation produced by the pipeline for output.
 data PipelineError
   = ValidationPE ValidationError
@@ -46,9 +32,9 @@ data PipelineError
   deriving (Eq)
 
 instance Show PipelineError where
-  show (ValidationPE e)   = show e
+  show (ValidationPE e)    = show e
   show (NormalizationPE e) = show e
-  show (LoadPE s)         = s
+  show (LoadPE s)          = s
 
 instance ToJSON PipelineError where
   toJSON (ValidationPE e) = case e of

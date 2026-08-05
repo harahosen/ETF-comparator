@@ -1,6 +1,6 @@
 module DemoComparison (runDemo) where
 
-import Service.Config (loadConfigFromFile, defaultConfig, Config(..))
+import Service.Config (loadConfigFromFile, Config(..))
 import Service.Pipeline (processComparisonWithConfig, ComparisonResult(..), ComparisonMetrics(..))
 import Service.OutputWriter (OutputResult(..), mkComparisonOutput, mkErrorOutput, writeOutput)
 import System.FilePath ((</>), takeFileName)
