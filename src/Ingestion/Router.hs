@@ -20,6 +20,5 @@ route :: FundId -> FileMeta -> (Preprocessor, Parser)
 route fundId meta =
   case (fmProvider meta, fmFormat meta) of
     (IS, CSV)   -> (preprocessIShares, parseIShares fundId)
-    (SS, XLSX)  -> (preprocessStateStreet, parseStateStreet fundId)
+    (SS, CSV)   -> (preprocessStateStreet, parseStateStreet fundId)
     (CF, CSV)   -> (preprocessCustom, parseCustom fundId)
-    _           -> error "Unsupported provider/format"

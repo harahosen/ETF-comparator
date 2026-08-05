@@ -1,7 +1,8 @@
-module Service.Main where
+#!/usr/bin/env runhaskell
+module Main where
 
 import Service.Config (loadConfigFromFile, defaultConfig, Config(..))
-import Service.Pipeline (processComparison, processComparisonWithConfig, processComparisonWithOutput, ComparisonResult(..), ComparisonMetrics(..))
+import Service.Pipeline (processComparison, processComparisonWithConfig, ComparisonResult(..), ComparisonMetrics(..))
 import Service.OutputWriter (OutputResult(..), mkComparisonOutput, mkErrorOutput, writeOutput)
 import System.Environment (getArgs)
 import System.Exit (exitFailure, exitSuccess)
@@ -23,8 +24,8 @@ main = do
           result <- processComparisonWithConfig config file1 file2
           handleResult config file1 file2 result
     _ -> do
-      putStrLn "Usage: etf-comparator <file1.csv> <file2.csv>"
-      putStrLn "   or: etf-comparator --config <config-file> <file1.csv> <file2.csv>"
+      putStrLn "Usage: run-comparison <file1.csv> <file2.csv>"
+      putStrLn "   or: run-comparison --config <config-file> <file1.csv> <file2.csv>"
       exitFailure
 
 handleResult :: Config -> FilePath -> FilePath -> ComparisonResult -> IO ()

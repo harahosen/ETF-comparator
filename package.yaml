@@ -22,8 +22,8 @@ dependencies:
   - directory
   - mtl
   - yaml
-  - xlsx
-  - lens
+  - time
+  - aeson
 
 library:
   source-dirs: src
@@ -35,3 +35,5 @@ tests:
     dependencies:
       - etf-comparator
       - hspec
+    other-modules:
+      - DemoComparison

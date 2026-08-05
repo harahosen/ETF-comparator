@@ -18,7 +18,6 @@ data ProviderCode
 -- file format
 data FileFormat
   = CSV
-  | XLSX
   deriving (Eq, Show)
 
 -- file metadata
@@ -45,7 +44,6 @@ checkFormat :: FilePath -> Either String FileFormat
 checkFormat path =
   case map toLower (takeExtension path) of
     ".csv"  -> Right CSV
-    ".xlsx" -> Right XLSX
     ext -> Left ("Unsupported file extension: " <> ext)
 
 checkFilename :: FilePath -> Either String (String, ProviderCode)

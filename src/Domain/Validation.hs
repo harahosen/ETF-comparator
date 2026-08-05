@@ -1,5 +1,6 @@
 module Domain.Validation
   ( validateRawETF
+  , validateRawETFAllErrors
   ) where
 
 import Domain.Types
@@ -15,6 +16,11 @@ validateRawETF :: RawETF -> Either [ValidationError] RawETF
 validateRawETF etf@(RawETF _ hs) =
   etf <$ runRules hs validationRules
 
+-- version that collects ALL errors from all rules
+validateRawETFAllErrors :: RawETF -> Either [ValidationError] RawETF
+validateRawETFAllErrors etf@(RawETF _ hs) =
+  etf <$ runRulesAll hs validationRules
+
 -- validation rule: returns zero or more errors
 type ValidationRule = [Holding] -> Either [ValidationError] ()
 
@@ -29,6 +35,16 @@ validationRules =
 -- all errors from the first rule that fails
 runRules :: [Holding] -> [ValidationRule] -> Either [ValidationError] ()
 runRules hs = foldl' (\acc rule -> acc >> rule hs) (Right ())
+
+-- collect ALL errors from all rules
+runRulesAll :: [Holding] -> [ValidationRule] -> Either [ValidationError] ()
+runRulesAll hs rules =
+  let allErrors = concatMap (\rule -> case rule hs of
+                                    Left errs -> errs
+                                    Right () -> []) rules
+  in if null allErrors
+     then Right ()
+     else Left allErrors
 
 -- the holdings list must not be empty
 ruleNonEmpty :: ValidationRule

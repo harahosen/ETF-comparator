@@ -20,6 +20,6 @@ spec = do
         Right
           (RawETF
             (FundId "TEST")
-            [ Holding (RawAssetId "AAPL") (Weight 0.6) Nothing
-            , Holding (RawAssetId "MSFT") (Weight 0.4) Nothing
+            [ Holding (RawAssetId "AAPL") Nothing (Weight 0.6)
+            , Holding (RawAssetId "MSFT") Nothing (Weight 0.4)
             ])
