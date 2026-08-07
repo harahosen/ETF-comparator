@@ -1,8 +1,10 @@
 # ETF composition comparator
 
 Personal project born to learn about Haskell and a bit about finance. It takes two CSV holding lists, normalizes them, and reports cosine, weighted Jaccard and overlap metrics.
+
 Built using two specific providers (iShares and StateStreet) as reference, but it is possible to use custom files with a different structure.
-N.b.: this is a small POC and the ETF comparator is not a complete tool, please do not take investing decisions based on it
+
+**N.b.:** this is a small POC and the ETF comparator is not a complete tool, please do not take investing decisions based on it
 
 ## Build the Haskell project
 
@@ -12,17 +14,18 @@ stack build
 
 ## Run
 
-### File reconciliation (optional, could be done manually)
+**File reconciliation (optional, could be done manually)**
 
 ```bash
 stack exec reconcile -- Input/YYYYMMDD-IS-<name>.csv Input/YYYYMMDD-SS-<name>.xlsx
 ```
 
-### Comparison, using or not a customizable config file 
+**Comparison, using or not a customizable config file** 
 
 ```bash
 stack exec etf-comparator -- Input/YYYYMMDD-IS-<name>-adapted.csv Input/YYYYMMDD-SS-<name>-adapted.csv
 ```
+or
 
 ```bash
 stack exec etf-comparator -- --config config.yaml <file1> <file2>
