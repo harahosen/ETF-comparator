@@ -1,0 +1,2 @@
+timestamp,etf_file_1,etf_file_2,cosine_similarity,weighted_jaccard_similarity,overlap_ratio
+20260807-144233,Input/20260105-IS-example-adapted.csv,Input/20260105-SS-example-adapted.csv,0.292108993295212,0.16115218958991404,0.2775728987719147

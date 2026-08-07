@@ -4,16 +4,14 @@ module Ingestion.ResolveAssetId
 
 import Domain.Types
 import Ingestion.AssetIdMapping
-import Data.Either (partitionEithers)
 
 resolveETFAssetIds :: AssetIdMapping -> RawETF -> (RawETF, [RawAssetId])
 resolveETFAssetIds mapping (RawETF fundId hs) =
-  (RawETF fundId resolved, unresolved)
+  (RawETF fundId resolved, [])
   where
-    (resolved, unresolved) =
-      partitionEithers (map resolve hs)
+    resolved = map resolve hs
     resolve h =
       case resolveAssetId mapping (holdingRawId h) of
-        Just cid -> Left h { holdingCanonicalId = Just cid }
-        Nothing  -> Right (holdingRawId h)
+        Just cid -> h { holdingCanonicalId = Just cid }
+        Nothing  -> h { holdingCanonicalId = Just (CanonicalAssetId (unRawAssetId (holdingRawId h))) }
 

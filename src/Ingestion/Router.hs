@@ -22,3 +22,5 @@ route fundId meta =
     (IS, CSV)   -> (preprocessIShares, parseIShares fundId)
     (SS, CSV)   -> (preprocessStateStreet, parseStateStreet fundId)
     (CF, CSV)   -> (preprocessCustom, parseCustom fundId)
+    _           -> (\_ -> Left "XLSX is not supported directly by etf-comparator; use reconcile to adapt it first"
+                   ,\_ -> Left "XLSX is not supported directly by etf-comparator")

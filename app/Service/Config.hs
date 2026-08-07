@@ -22,9 +22,9 @@ instance FromJSON Config
 
 defaultConfig :: Config
 defaultConfig = Config
-  { assetMappingFile = "data/asset-mapping.csv"
-  , inputDirectory  = "./data/input"
-  , outputDirectory = "./data/output"
+  { assetMappingFile = "Input/asset-mapping.csv"
+  , inputDirectory  = "Input"
+  , outputDirectory = "Output"
   , tolerance       = 1e-6
   , failOnUnresolved = False
   }

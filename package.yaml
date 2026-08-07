@@ -24,9 +24,38 @@ dependencies:
   - yaml
   - time
   - aeson
+  - xlsx
+  - lens
 
 library:
-  source-dirs: src
+  source-dirs: [src, app]
+  exposed-modules:
+    - Domain.Comparison
+    - Domain.Errors
+    - Domain.Merge
+    - Domain.Normalization
+    - Domain.Types
+    - Domain.Validation
+    - Ingestion.AssetIdMapping
+    - Ingestion.FileLoader
+    - Ingestion.FileMeta
+    - Ingestion.MappingLoader
+    - Ingestion.ResolveAssetId
+    - Ingestion.Router
+    - Ingestion.TableLoader
+    - Ingestion.UnsolvedId
+    - Ingestion.Xlsx
+    - Parser.Common.ParserHelpers
+    - Parser.Common.PreprocessHelpers
+    - Parser.Custom
+    - Parser.IShares
+    - Parser.Preprocess.Custom
+    - Parser.Preprocess.IShares
+    - Parser.Preprocess.StateStreet
+    - Parser.StateStreet
+    - Service.Config
+    - Service.OutputWriter
+    - Service.Pipeline
 
 tests:
   etf-comparator-test:
@@ -50,3 +79,31 @@ tests:
       - Parser.StateStreetSpec
       - Service.OutputWriterSpec
       - Service.PipelineSpec
+
+executables:
+  etf-comparator:
+    main: Service/Main.hs
+    source-dirs: app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -main-is Service.Main
+    dependencies:
+      - etf-comparator
+
+  reconcile:
+    main: Service/Reconcile.hs
+    source-dirs: app
+    ghc-options:
+      - -main-is Service.Reconcile
+    dependencies:
+      - etf-comparator
+      - base
+      - bytestring
+      - cassava
+      - containers
+      - directory
+      - filepath
+      - text
+      - vector
