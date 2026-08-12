@@ -1,0 +1,28 @@
+# Build artifacts
+.stack-work/
+dist-newstyle/
+dist/
+*.cabal
+
+# Generated output
+Input/
+Output/
+test/output/
+test/input/empty-mapping.csv
+
+# Version control
+.git/
+.github/
+.gitignore
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+
+# Editor and local files
+.devin/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

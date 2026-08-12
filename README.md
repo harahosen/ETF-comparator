@@ -81,3 +81,27 @@ timestamp,error_file,error_list
 ```
 
 Error rows contain a JSON-escaped list of issues such as invalid filenames, missing required columns, non-numeric weights, or normalization problems.
+
+## Docker
+
+A basic `Dockerfile` is provided. Build the image and run the tools inside a container:
+
+```bash
+docker build -t etf-comparator .
+```
+
+Run `reconcile` on raw iShares/State Street files:
+
+```bash
+docker run --rm -v "$PWD/Input:/data/Input" etf-comparator reconcile \
+  /data/Input/YYYYMMDD-IS-<name>.csv /data/Input/YYYYMMDD-SS-<name>.xlsx /data/Input
+```
+
+Run the comparator on adapted files:
+
+```bash
+docker run --rm -v "$PWD:/data" etf-comparator etf-comparator \
+  /data/Input/YYYYMMDD-IS-<name>-adapted.csv /data/Input/YYYYMMDD-SS-<name>-adapted.csv
+```
+
+Both commands write their output into the mounted `/data` directory.
