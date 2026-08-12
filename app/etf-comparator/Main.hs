@@ -1,4 +1,4 @@
-module Service.Main where
+module Main where
 
 import Service.Config (loadConfigFromFile, defaultConfig, Config(..))
 import Service.Pipeline (processComparison, processComparisonWithConfig, ComparisonResult(..), ComparisonMetrics(..))
@@ -31,8 +31,8 @@ handleResult :: Config -> FilePath -> FilePath -> ComparisonResult -> IO ()
 handleResult config file1 file2 result = do
   -- Write output file for both success and failure cases
   outputResult <- case result of
-    ComparisonSuccess metrics unresolved -> do
-      compOut <- mkComparisonOutput file1 file2 metrics unresolved
+    ComparisonSuccess metrics -> do
+      compOut <- mkComparisonOutput file1 file2 metrics
       return $ OutputSuccess compOut
     ComparisonError errInfos -> do
       errOuts <- mapM (\(_, failedFile, allErrors) -> mkErrorOutput failedFile allErrors) errInfos
@@ -43,7 +43,7 @@ handleResult config file1 file2 result = do
 
   -- Then handle console output and exit codes
   case result of
-    ComparisonSuccess (ComparisonMetrics cosSim jacSim overlap) _ -> do
+    ComparisonSuccess (ComparisonMetrics cosSim jacSim overlap) -> do
       putStrLn "ETF comparison completed successfully!"
       putStrLn $ "Cosine Similarity: " ++ show cosSim
       putStrLn $ "Weighted Jaccard Similarity: " ++ show jacSim

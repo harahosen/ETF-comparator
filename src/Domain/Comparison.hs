@@ -4,9 +4,6 @@ module Domain.Comparison
   , weightedJaccardSimilarity
   , weightedJaccardDistance
   , overlapRatio
-  , cosineSimilarityValue
-  , weightedJaccardSimilarityValue
-  , overlapRatioValue
   ) where
 
 import Domain.Types
@@ -78,12 +75,4 @@ overlapRatio (NormalizedETF a) (NormalizedETF b) =
     totalA = sum (map unWeight (M.elems a))
     totalB = sum (map unWeight (M.elems b))
 
--- Accessor functions for metrics
-cosineSimilarityValue :: NormalizedETF -> NormalizedETF -> Double
-cosineSimilarityValue = cosineSimilarity
 
-weightedJaccardSimilarityValue :: NormalizedETF -> NormalizedETF -> Double
-weightedJaccardSimilarityValue = weightedJaccardSimilarity
-
-overlapRatioValue :: NormalizedETF -> NormalizedETF -> Double
-overlapRatioValue = overlapRatio

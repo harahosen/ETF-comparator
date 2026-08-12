@@ -58,13 +58,12 @@ spec = do
               ]
         validateRawETF etf `shouldBe` Right etf
 
-    describe "validateRawETFAllErrors" $ do
       it "collects all validation errors" $ do
         let etf = RawETF (FundId "TEST")
               [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight (-0.5))
               , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight (-0.3))
               , Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.2)
               ]
-        case validateRawETFAllErrors etf of
+        case validateRawETF etf of
           Left errs -> length errs `shouldBe` 3  -- duplicate + 2 negative weights
           Right _ -> expectationFailure "Should have collected all errors"

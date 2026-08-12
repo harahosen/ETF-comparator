@@ -5,11 +5,10 @@ module Ingestion.ResolveAssetId
 import Domain.Types
 import Ingestion.AssetIdMapping
 
-resolveETFAssetIds :: AssetIdMapping -> RawETF -> (RawETF, [RawAssetId])
+resolveETFAssetIds :: AssetIdMapping -> RawETF -> RawETF
 resolveETFAssetIds mapping (RawETF fundId hs) =
-  (RawETF fundId resolved, [])
+  RawETF fundId (map resolve hs)
   where
-    resolved = map resolve hs
     resolve h =
       case resolveAssetId mapping (holdingRawId h) of
         Just cid -> h { holdingCanonicalId = Just cid }

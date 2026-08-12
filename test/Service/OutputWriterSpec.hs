@@ -16,15 +16,13 @@ spec = do
       describe "mkComparisonOutput" $ do
         it "creates comparison output with timestamp" $ do
           let metrics = ComparisonMetrics 0.95 0.89 0.75
-          let unresolved = [("ETF1", []), ("ETF2", ["UNKNOWN1"])]
-          compOut <- mkComparisonOutput "test/input/20260101-IS-tech.csv" "test/input/20260102-SS-finance.csv" metrics unresolved
+          compOut <- mkComparisonOutput "test/input/20260101-IS-tech.csv" "test/input/20260102-SS-finance.csv" metrics
           coTimestamp compOut `shouldSatisfy` (\ts -> length ts > 0)
           coFile1 compOut `shouldBe` "test/input/20260101-IS-tech.csv"
           coFile2 compOut `shouldBe` "test/input/20260102-SS-finance.csv"
           coCosineSimilarity compOut `shouldBe` 0.95
           coWeightedJaccardSimilarity compOut `shouldBe` 0.89
           coOverlapRatio compOut `shouldBe` 0.75
-          coUnresolvedIds compOut `shouldBe` unresolved
 
       describe "mkErrorOutput" $ do
         it "creates error output with timestamp and error file" $ do
@@ -38,7 +36,7 @@ spec = do
         it "writes comparison output CSV to test/output folder with descriptive column names" $ do
           let outputDir = "test" </> "output"
           let metrics = ComparisonMetrics 0.95 0.89 0.75
-          compOut <- mkComparisonOutput "test/input/20260101-IS-tech.csv" "test/input/20260102-SS-finance.csv" metrics []
+          compOut <- mkComparisonOutput "test/input/20260101-IS-tech.csv" "test/input/20260102-SS-finance.csv" metrics
           writeComparisonOutput outputDir "demo-success" compOut
           let expectedFile = outputDir </> "comparison-demo-success.csv"
           fileExists <- doesFileExist expectedFile

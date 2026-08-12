@@ -21,7 +21,6 @@ data ValidationError
 data NormalizationError
   = ZeroTotalWeight
   | InvalidTotalWeight Double
-  | UnresolvedHoldings Int  -- Number of holdings without canonical IDs
   deriving (Eq, Show)
 
 -- | Normalized error representation produced by the pipeline for output.
@@ -52,8 +51,6 @@ instance ToJSON PipelineError where
       object ["type" .= ("ZeroTotalWeight" :: Text)]
     InvalidTotalWeight d ->
       object ["type" .= ("InvalidTotalWeight" :: Text), "total" .= d]
-    UnresolvedHoldings n ->
-      object ["type" .= ("UnresolvedHoldings" :: Text), "count" .= n]
 
   toJSON (LoadPE s) =
     object ["type" .= ("Load" :: Text), "message" .= s]

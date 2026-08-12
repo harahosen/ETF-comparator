@@ -35,24 +35,6 @@ spec = do
               ]
         normalizeETF etf `shouldBe` Left ZeroTotalWeight
 
-      it "handles ETF with unresolved holdings" $ do
-        let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.6)
-              , Holding (RawAssetId "UNKNOWN") Nothing (Weight 0.4)
-              ]
-        case normalizeETF etf of
-          Right (NormalizedETF m) -> do
-            M.size m `shouldBe` 1
-            sum (map unWeight (M.elems m)) `shouldSatisfy` (\total -> abs (total - 1.0) < 1e-6)
-          Left err -> expectationFailure $ "Should normalize with unresolved: " ++ show err
-
-      it "rejects ETF with all unresolved holdings" $ do
-        let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "UNKNOWN1") Nothing (Weight 0.6)
-              , Holding (RawAssetId "UNKNOWN2") Nothing (Weight 0.4)
-              ]
-        normalizeETF etf `shouldBe` Left (UnresolvedHoldings 2)
-
     describe "normalizeETFWithTolerance" $ do
       it "accepts ETF with weights within tolerance" $ do
         let etf = RawETF (FundId "TEST")

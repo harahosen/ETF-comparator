@@ -65,7 +65,6 @@ See `Input/` for sample files.
 - `assetMappingFile`: path to an optional `raw,canonical` CSV. When missing, raw ids are treated as canonical.
 - `outputDirectory`: directory where result files are written (`Output` by default).
 - `tolerance`: maximum allowed deviation of total weight from `1.0` before renormalization is triggered.
-- `failOnUnresolved`: placeholder flag for future strict unresolved-asset handling.
 
 ## Output
 

@@ -1,4 +1,4 @@
-module Service.Reconcile where
+module Main where
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
@@ -15,6 +15,7 @@ import Data.Char (isAlphaNum, toLower, toUpper)
 import Data.Maybe (fromMaybe, listToMaybe)
 import Data.List (findIndex)
 import System.Environment (getArgs)
+import System.Exit (exitFailure, exitSuccess)
 import System.FilePath (takeBaseName, takeExtension, (</>))
 import System.Directory (createDirectoryIfMissing)
 import Ingestion.Xlsx (loadXlsx)
@@ -71,65 +72,80 @@ stopWords = S.fromList
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
-    [p, s] ->
-      reconcileWithOut p s "Input"
-    [p, s, o] ->
-      reconcileWithOut p s o
-    _ ->
-      error "Usage: reconcile primary secondary [output-dir]"
+  result <- case args of
+    [p, s]       -> reconcileWithOut p s "Input"
+    [p, s, o]    -> reconcileWithOut p s o
+    _            -> return $ Left "Usage: reconcile primary secondary [output-dir]"
+  case result of
+    Left err -> putStrLn ("Error: " ++ err) >> exitFailure
+    Right () -> exitSuccess
 
-reconcileWithOut :: FilePath -> FilePath -> FilePath -> IO ()
+reconcileWithOut :: FilePath -> FilePath -> FilePath -> IO (Either String ())
 reconcileWithOut primary secondary outDir = do
-  validate primary
-  validate secondary
-  createDirectoryIfMissing True outDir
-  let pOut = outDir </> takeBaseName primary ++ "-adapted.csv"
-      sOut = outDir </> takeBaseName secondary ++ "-adapted.csv"
-  reconcileFiles primary secondary pOut sOut
+  v1 <- validate primary
+  case v1 of
+    Left err -> return $ Left err
+    Right () -> do
+      v2 <- validate secondary
+      case v2 of
+        Left err -> return $ Left err
+        Right () -> do
+          createDirectoryIfMissing True outDir
+          let pOut = outDir </> takeBaseName primary ++ "-adapted.csv"
+              sOut = outDir </> takeBaseName secondary ++ "-adapted.csv"
+          reconcileFiles primary secondary pOut sOut
 
-validate :: FilePath -> IO ()
+validate :: FilePath -> IO (Either String ())
 validate path =
-  case deriveFileMetadata path of
-    Left err -> error $ "Invalid input filename " ++ path ++ ": " ++ err
-    Right _  -> return ()
+  return $ case deriveFileMetadata path of
+    Left err -> Left ("Invalid input filename " ++ path ++ ": " ++ err)
+    Right _  -> Right ()
 
-reconcileFiles :: FilePath -> FilePath -> FilePath -> FilePath -> IO ()
+reconcileFiles :: FilePath -> FilePath -> FilePath -> FilePath -> IO (Either String ())
 reconcileFiles primaryPath secondaryPath pOut sOut = do
-  primaryTable   <- cleanTable <$> loadInput primaryPath
-  secondaryTable <- cleanTable <$> loadInput secondaryPath
+  pInput <- loadInput primaryPath
+  case pInput of
+    Left err -> return $ Left err
+    Right pTable -> do
+      sInput <- loadInput secondaryPath
+      case sInput of
+        Left err -> return $ Left err
+        Right sTable ->
+          case extract primaryPath (cleanTable pTable) of
+            Left err -> return $ Left err
+            Right (pHeader, pRows) ->
+              case extract secondaryPath (cleanTable sTable) of
+                Left err -> return $ Left err
+                Right (sHeader, sRows) -> do
+                  let primaryHoldings   = parseHoldings pHeader pRows
+                      secondaryHoldings = parseHoldings sHeader sRows
+                      slugMap           = buildSlugMap primaryHoldings
+                      primaryW          = canonicalize M.empty primaryHoldings
+                      secondaryW        = canonicalize slugMap secondaryHoldings
 
-  (pHeader, pRows) <- extract primaryPath primaryTable
-  (sHeader, sRows) <- extract secondaryPath secondaryTable
+                  writeCsv pOut  $ renderAdapted primaryW
+                  writeCsv sOut  $ renderAdapted secondaryW
 
-  let primaryHoldings   = parseHoldings pHeader pRows
-      secondaryHoldings = parseHoldings sHeader sRows
-      slugMap           = buildSlugMap primaryHoldings
-      primaryW          = canonicalize M.empty primaryHoldings
-      secondaryW        = canonicalize slugMap secondaryHoldings
-
-  writeCsv pOut  $ renderAdapted primaryW
-  writeCsv sOut  $ renderAdapted secondaryW
-
-  putStrLn $ "Wrote " ++ show (M.size primaryW) ++ " rows to " ++ pOut
-  putStrLn $ "Wrote " ++ show (M.size secondaryW) ++ " rows to " ++ sOut
+                  putStrLn $ "Wrote " ++ show (M.size primaryW) ++ " rows to " ++ pOut
+                  putStrLn $ "Wrote " ++ show (M.size secondaryW) ++ " rows to " ++ sOut
+                  return $ Right ()
 
 -- Input loading
 
-loadInput :: FilePath -> IO Table
+loadInput :: FilePath -> IO (Either String Table)
 loadInput path =
   case map toLower (takeExtension path) of
     ".csv"  -> loadCsv path
-    ".xlsx" -> loadXlsx path
-    ext    -> error $ "Unsupported input extension: " ++ ext
+    ".xlsx" -> Right <$> loadXlsx path
+    ext    -> return $ Left ("Unsupported input extension: " ++ ext)
 
-loadCsv :: FilePath -> IO Table
+loadCsv :: FilePath -> IO (Either String Table)
 loadCsv path = do
   bs <- LBS.readFile path
-  case (decode NoHeader bs :: Either String (V.Vector (V.Vector BS.ByteString))) of
-    Left err -> error $ "CSV load error: " ++ err
+  return $ case (decode NoHeader bs :: Either String (V.Vector (V.Vector BS.ByteString))) of
+    Left err -> Left ("CSV load error: " ++ err)
     Right rs ->
-      return [ [ T.filter (/= '\xfeff') (TE.decodeUtf8Lenient field) | field <- V.toList record ]
+      Right [ [ T.filter (/= '\xfeff') (TE.decodeUtf8Lenient field) | field <- V.toList record ]
              | record <- V.toList rs ]
 
 cleanTable :: Table -> Table
@@ -137,12 +153,12 @@ cleanTable = filter (not . all (T.null . T.strip))
 
 -- Header extraction
 
-extract :: FilePath -> Table -> IO (Header, Table)
+extract :: FilePath -> Table -> Either String (Header, Table)
 extract path table =
   case findHeader table of
-    Nothing -> error $ "Could not find a header row in " ++ path
+    Nothing -> Left ("Could not find a header row in " ++ path)
     Just (i, assetIdxs, nameIdxs, weightIdxs) ->
-      return (Header assetIdxs nameIdxs weightIdxs, drop (i + 1) table)
+      Right (Header assetIdxs nameIdxs weightIdxs, drop (i + 1) table)
 
 findHeader :: Table -> Maybe (Int, [Int], [Int], [Int])
 findHeader = go 0

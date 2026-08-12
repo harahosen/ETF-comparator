@@ -37,7 +37,6 @@ data ComparisonOutput = ComparisonOutput
   , coCosineSimilarity :: Double
   , coWeightedJaccardSimilarity :: Double
   , coOverlapRatio :: Double
-  , coUnresolvedIds :: [(String, [String])]  -- (FundId, [RawAssetId])
   } deriving (Show, Eq)
 
 -- Error output for a single failed file
@@ -91,8 +90,8 @@ writeErrorOutputs outputDir timestamp errOuts = do
       in intercalate "," [eoTimestamp errOut, relFailedFile, errorListField]
 
 -- Helper to create ComparisonOutput from pipeline result
-mkComparisonOutput :: String -> String -> ComparisonMetrics -> [(String, [String])] -> IO ComparisonOutput
-mkComparisonOutput file1 file2 metrics unresolved = do
+mkComparisonOutput :: String -> String -> ComparisonMetrics -> IO ComparisonOutput
+mkComparisonOutput file1 file2 metrics = do
   timestamp <- getCurrentTime
   let timestampStr = formatTime defaultTimeLocale "%Y%m%d-%H%M%S" timestamp
   return $ ComparisonOutput
@@ -102,7 +101,6 @@ mkComparisonOutput file1 file2 metrics unresolved = do
     , coCosineSimilarity = cosineSimilarityValue metrics
     , coWeightedJaccardSimilarity = weightedJaccardSimilarityValue metrics
     , coOverlapRatio = overlapRatioValue metrics
-    , coUnresolvedIds = unresolved
     }
 
 -- Helper to create ErrorOutput for a failed file

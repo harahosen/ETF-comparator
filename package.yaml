@@ -28,7 +28,7 @@ dependencies:
   - lens
 
 library:
-  source-dirs: [src, app]
+  source-dirs: [src]
   exposed-modules:
     - Domain.Comparison
     - Domain.Errors
@@ -43,7 +43,6 @@ library:
     - Ingestion.ResolveAssetId
     - Ingestion.Router
     - Ingestion.TableLoader
-    - Ingestion.UnsolvedId
     - Ingestion.Xlsx
     - Parser.Common.ParserHelpers
     - Parser.Common.PreprocessHelpers
@@ -65,7 +64,6 @@ tests:
       - etf-comparator
       - hspec
     other-modules:
-      - DemoComparison
       - Domain.ComparisonSpec
       - Domain.MergeSpec
       - Domain.NormalizationSpec
@@ -82,21 +80,19 @@ tests:
 
 executables:
   etf-comparator:
-    main: Service/Main.hs
-    source-dirs: app
+    main: Main.hs
+    source-dirs: app/etf-comparator
     ghc-options:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
-      - -main-is Service.Main
     dependencies:
       - etf-comparator
+      - base
 
   reconcile:
-    main: Service/Reconcile.hs
-    source-dirs: app
-    ghc-options:
-      - -main-is Service.Reconcile
+    main: Main.hs
+    source-dirs: app/reconcile
     dependencies:
       - etf-comparator
       - base

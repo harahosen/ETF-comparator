@@ -1,6 +1,5 @@
 module Domain.Validation
   ( validateRawETF
-  , validateRawETFAllErrors
   ) where
 
 import Domain.Types
@@ -11,14 +10,9 @@ import Data.List (foldl')
 import Prelude hiding (isNaN)
 import GHC.Float (isNaN)
 
--- same RawETF if OK, collection of validation errors if KO
+-- Collects all validation errors for the given ETF.
 validateRawETF :: RawETF -> Either [ValidationError] RawETF
 validateRawETF etf@(RawETF _ hs) =
-  etf <$ runRules hs validationRules
-
--- version that collects ALL errors from all rules
-validateRawETFAllErrors :: RawETF -> Either [ValidationError] RawETF
-validateRawETFAllErrors etf@(RawETF _ hs) =
   etf <$ runRulesAll hs validationRules
 
 -- validation rule: returns zero or more errors
@@ -31,10 +25,6 @@ validationRules =
   , checkDuplicatesAll
   , checkWeightsAll
   ]
-
--- all errors from the first rule that fails
-runRules :: [Holding] -> [ValidationRule] -> Either [ValidationError] ()
-runRules hs = foldl' (\acc rule -> acc >> rule hs) (Right ())
 
 -- collect ALL errors from all rules
 runRulesAll :: [Holding] -> [ValidationRule] -> Either [ValidationError] ()

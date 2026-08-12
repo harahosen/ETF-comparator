@@ -1,5 +1,3 @@
 assetMappingFile: "test/input/asset-mapping.csv"
-inputDirectory: "test/input"
 outputDirectory: "test/output"
 tolerance: 0.000001
-failOnUnresolved: false

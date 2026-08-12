@@ -8,7 +8,6 @@ import Domain.Types
 import Domain.Errors
 
 import qualified Data.Map.Strict as M
-import Data.Maybe (isJust)
 
 -- tolerance for floating-point comparisons
 epsilon :: Double
@@ -26,44 +25,24 @@ normalizeETF = normalizeETFWithTolerance epsilon
 -- ETF normalization with custom tolerance
 normalizeETFWithTolerance :: Double -> RawETF -> Either NormalizationError NormalizedETF
 normalizeETFWithTolerance tolerance (RawETF _ hs)
-  | originalTotal <= 0 = Left ZeroTotalWeight
+  | total <= 0 = Left ZeroTotalWeight
+  | abs (total - 1.0) <= tolerance =
+      Right $ NormalizedETF (M.fromList pairs)
   | otherwise =
-      let resolvedOnly = [h | h <- hs, isJust (holdingCanonicalId h)]
-          unresolvedCount = length hs - length resolvedOnly
-          resolvedTotal = totalWeight resolvedOnly
-          resolvedPairs = [(cid, holdingWeight h) | h <- resolvedOnly, Just cid <- [holdingCanonicalId h]]
-      in if null resolvedOnly
-         then Left (UnresolvedHoldings unresolvedCount)
-         else if abs (resolvedTotal - 1.0) <= tolerance
-           then Right $ NormalizedETF (M.fromList resolvedPairs)
-           else Right $ NormalizedETF
-                (M.fromList
-                  [ (cid, Weight (unWeight weight / resolvedTotal))
-                  | (cid, weight) <- resolvedPairs
-                  ])
+      Right $ NormalizedETF
+        (M.fromList
+          [ (cid, Weight (unWeight w / total))
+          | (cid, w) <- pairs
+          ])
   where
-    originalTotal = totalWeight hs
+    pairs =
+      [ (cid, holdingWeight h)
+      | h <- hs
+      , Just cid <- [holdingCanonicalId h]
+      ]
+    total = sum (map (unWeight . snd) pairs)
 
 -- sum of all weights
 totalWeight :: [Holding] -> Double
 totalWeight =
   sum . map (unWeight . holdingWeight)
-
-{-
-The following functions are not needed with the current data flow
-keeping them for now because they could be useful if an already normalized ETF have to be checked
-(it should not be possible by design, but with new sources something could change a little)
-
-weightsSumToOne :: Foldable f => f Weight -> Bool
-weightsSumToOne ws =
-  abs (sum (map unWeight (toList ws)) - 1.0) < epsilon
-
-isNormalizedRaw :: RawETF -> Bool
-isNormalizedRaw (RawETF _ hs) =
-  weightsSumToOne (map holdingWeight hs)
-
-assertNormalized :: NormalizedETF -> Either NormalizationError ()
-assertNormalized (NormalizedETF m)
-  | weightsSumToOne (M.elems m) = Right ()
-  | otherwise = Left InvalidNormalization
--}
