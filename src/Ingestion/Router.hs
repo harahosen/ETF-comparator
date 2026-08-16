@@ -20,7 +20,9 @@ route :: FundId -> FileMeta -> (Preprocessor, Parser)
 route fundId meta =
   case (fmProvider meta, fmFormat meta) of
     (IS, CSV)   -> (preprocessIShares, parseIShares fundId)
+    (IS, XLSX)  -> (preprocessIShares, parseIShares fundId)
     (SS, CSV)   -> (preprocessStateStreet, parseStateStreet fundId)
+    (SS, XLSX)  -> (preprocessStateStreet, parseStateStreet fundId)
     (CF, CSV)   -> (preprocessCustom, parseCustom fundId)
-    _           -> (\_ -> Left "XLSX is not supported directly by etf-comparator; use reconcile to adapt it first"
-                   ,\_ -> Left "XLSX is not supported directly by etf-comparator")
+    _           -> (\_ -> Left "Only .csv custom files or .csv/.xlsx iShares/StateStreet files are supported"
+                   ,\_ -> Left "Only .csv custom files or .csv/.xlsx iShares/StateStreet files are supported")

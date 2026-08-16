@@ -11,6 +11,7 @@ module Domain.Types
   ) where
 
 import Data.Map.Strict (Map)
+import Data.Text (Text)
 
 -- vendor-agnostic ETF identifier (ISIN, tiket, code, name... whatever)
 newtype FundId = FundId { unFundId :: String }
@@ -38,6 +39,7 @@ instance Monoid Weight where
 data Holding = Holding
   { holdingRawId        :: RawAssetId
   , holdingCanonicalId  :: Maybe CanonicalAssetId
+  , holdingName         :: Maybe Text
   , holdingWeight       :: Weight
   } deriving (Eq, Show)
 

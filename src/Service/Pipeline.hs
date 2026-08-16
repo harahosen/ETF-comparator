@@ -13,18 +13,11 @@ import Domain.Validation (validateRawETF)
 import Domain.Normalization (normalizeETFWithTolerance)
 import Domain.Merge (mergeResolvedHoldings)
 import Domain.Comparison (cosineSimilarity, weightedJaccardSimilarity, overlapRatio)
+import Domain.Reconcile (reconcileETFs)
 import Ingestion.AssetIdMapping (AssetIdMapping)
-import Ingestion.FileMeta (deriveFileMetadata, fmDate)
-import Ingestion.TableLoader (loadTable)
-import Ingestion.Reconcile (reconcileTables)
+import Ingestion.FileLoader (loadETF)
 import Ingestion.MappingLoader (loadAssetMapping)
 import Ingestion.ResolveAssetId (resolveETFAssetIds)
-import Parser.Reconciled (parseReconciled)
-
-import Control.Exception (try, IOException)
-import Data.Text (Text)
-
-type Table = [[Text]]
 
 data ComparisonMetrics = ComparisonMetrics
   { cosineSimilarityValue :: Double
@@ -39,55 +32,42 @@ data ComparisonResult
 
 processComparisonWithConfig :: Config -> FilePath -> FilePath -> IO ComparisonResult
 processComparisonWithConfig config file1 file2 = do
-  case (deriveFileMetadata file1, deriveFileMetadata file2) of
+  result1 <- loadETF file1
+  result2 <- loadETF file2
+  case (result1, result2) of
     (Left err, _) ->
       return $ ComparisonError [(err, file1, [LoadPE err])]
     (_, Left err) ->
       return $ ComparisonError [(err, file2, [LoadPE err])]
-    (Right meta1, Right meta2) -> do
-      eTable1 <- try (loadTable meta1) :: IO (Either IOException Table)
-      eTable2 <- try (loadTable meta2) :: IO (Either IOException Table)
-      case (eTable1, eTable2) of
-        (Left ioe, _) ->
-          return $ ComparisonError [(show ioe, file1, [LoadPE (show ioe)])]
-        (_, Left ioe) ->
-          return $ ComparisonError [(show ioe, file2, [LoadPE (show ioe)])]
-        (Right table1, Right table2) ->
-          case reconcileTables file1 file2 table1 table2 of
+    (Right raw1, Right raw2) ->
+      case reconcileETFs raw1 raw2 of
+        Left err ->
+          return $ ComparisonError [(err, file1 ++ " and " ++ file2, [LoadPE err])]
+        Right (reconciled1, reconciled2) -> do
+          mappingResult <- loadAssetMapping (assetMappingFile config)
+          case mappingResult of
             Left err ->
-              return $ ComparisonError [(err, file1 ++ " and " ++ file2, [LoadPE err])]
-            Right (primaryTable, secondaryTable) ->
-              case (parseReconciled (FundId (fmDate meta1)) primaryTable,
-                    parseReconciled (FundId (fmDate meta2)) secondaryTable) of
-                (Left err, _) ->
-                  return $ ComparisonError [(err, file1, [LoadPE err])]
-                (_, Left err) ->
-                  return $ ComparisonError [(err, file2, [LoadPE err])]
-                (Right raw1, Right raw2) -> do
-                  mappingResult <- loadAssetMapping (assetMappingFile config)
-                  case mappingResult of
-                    Left err ->
-                      return $ ComparisonError [(err, assetMappingFile config, [LoadPE err])]
-                    Right mapping ->
-                      case (processSingleETF config mapping raw1, processSingleETF config mapping raw2) of
-                        (Left (firstErr, allErrs), Right _) ->
-                          return $ ComparisonError [(firstErr, file1, allErrs)]
-                        (Right _, Left (firstErr, allErrs)) ->
-                          return $ ComparisonError [(firstErr, file2, allErrs)]
-                        (Left (firstErr1, allErrs1), Left (firstErr2, allErrs2)) ->
-                          return $ ComparisonError
-                            [ (firstErr1, file1, allErrs1)
-                            , (firstErr2, file2, allErrs2)
-                            ]
-                        (Right (etf1, _), Right (etf2, _)) -> do
-                          let cosSim = cosineSimilarity etf1 etf2
-                              jacSim = weightedJaccardSimilarity etf1 etf2
-                              overlap = overlapRatio etf1 etf2
-                          return $ ComparisonSuccess (ComparisonMetrics
-                            { cosineSimilarityValue = cosSim
-                            , weightedJaccardSimilarityValue = jacSim
-                            , overlapRatioValue = overlap
-                            })
+              return $ ComparisonError [(err, assetMappingFile config, [LoadPE err])]
+            Right mapping ->
+              case (processSingleETF config mapping reconciled1, processSingleETF config mapping reconciled2) of
+                (Left (firstErr, allErrs), Right _) ->
+                  return $ ComparisonError [(firstErr, file1, allErrs)]
+                (Right _, Left (firstErr, allErrs)) ->
+                  return $ ComparisonError [(firstErr, file2, allErrs)]
+                (Left (firstErr1, allErrs1), Left (firstErr2, allErrs2)) ->
+                  return $ ComparisonError
+                    [ (firstErr1, file1, allErrs1)
+                    , (firstErr2, file2, allErrs2)
+                    ]
+                (Right (etf1, _), Right (etf2, _)) -> do
+                  let cosSim = cosineSimilarity etf1 etf2
+                      jacSim = weightedJaccardSimilarity etf1 etf2
+                      overlap = overlapRatio etf1 etf2
+                  return $ ComparisonSuccess (ComparisonMetrics
+                    { cosineSimilarityValue = cosSim
+                    , weightedJaccardSimilarityValue = jacSim
+                    , overlapRatioValue = overlap
+                    })
 
 processSingleETF :: Config -> AssetIdMapping -> RawETF -> Either (String, [PipelineError]) (NormalizedETF, FundId)
 processSingleETF config mapping rawEtf =

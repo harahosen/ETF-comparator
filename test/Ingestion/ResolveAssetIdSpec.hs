@@ -16,8 +16,8 @@ spec = do
               , (RawAssetId "MSFT_RAW", CanonicalAssetId "MSFT")
               ]
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL_RAW") Nothing (Weight 0.6)
-              , Holding (RawAssetId "MSFT_RAW") Nothing (Weight 0.4)
+              [ Holding (RawAssetId "AAPL_RAW") Nothing Nothing (Weight 0.6)
+              , Holding (RawAssetId "MSFT_RAW") Nothing Nothing (Weight 0.4)
               ]
         let resolved = resolveETFAssetIds mapping etf
         all (\h -> holdingCanonicalId h /= Nothing) (etfHoldings resolved) `shouldBe` True
@@ -27,8 +27,8 @@ spec = do
               [ (RawAssetId "AAPL_RAW", CanonicalAssetId "AAPL")
               ]
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL_RAW") Nothing (Weight 0.6)
-              , Holding (RawAssetId "UNKNOWN_RAW") Nothing (Weight 0.4)
+              [ Holding (RawAssetId "AAPL_RAW") Nothing Nothing (Weight 0.6)
+              , Holding (RawAssetId "UNKNOWN_RAW") Nothing Nothing (Weight 0.4)
               ]
         let resolved = resolveETFAssetIds mapping etf
         let unknown = filter (\h -> holdingRawId h == RawAssetId "UNKNOWN_RAW") (etfHoldings resolved)
@@ -37,8 +37,8 @@ spec = do
       it "handles empty mapping by using raw asset IDs" $ do
         let mapping = M.empty :: AssetIdMapping
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") Nothing (Weight 0.6)
-              , Holding (RawAssetId "MSFT") Nothing (Weight 0.4)
+              [ Holding (RawAssetId "AAPL") Nothing Nothing (Weight 0.6)
+              , Holding (RawAssetId "MSFT") Nothing Nothing (Weight 0.4)
               ]
         let resolved = resolveETFAssetIds mapping etf
         all (\h -> holdingCanonicalId h /= Nothing) (etfHoldings resolved) `shouldBe` True
@@ -56,7 +56,7 @@ spec = do
               [ (RawAssetId "AAPL", CanonicalAssetId "AAPL")
               ]
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") Nothing (Weight 1.0)
+              [ Holding (RawAssetId "AAPL") Nothing Nothing (Weight 1.0)
               ]
         let resolved = resolveETFAssetIds mapping etf
         etfFundId resolved `shouldBe` FundId "TEST"
@@ -67,8 +67,8 @@ spec = do
               , (RawAssetId "MSFT", CanonicalAssetId "MSFT")
               ]
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") Nothing (Weight 0.6)
-              , Holding (RawAssetId "MSFT") Nothing (Weight 0.4)
+              [ Holding (RawAssetId "AAPL") Nothing Nothing (Weight 0.6)
+              , Holding (RawAssetId "MSFT") Nothing Nothing (Weight 0.4)
               ]
         let resolved = resolveETFAssetIds mapping etf
         let weights = map holdingWeight (etfHoldings resolved)

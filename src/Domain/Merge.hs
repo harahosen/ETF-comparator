@@ -19,7 +19,7 @@ mergeResolvedHoldings (RawETF fundId holdings) =
       M.elems $
         M.fromListWith mergeHolding
           [ (cid, h)
-          | h@(Holding _ (Just cid) _) <- resolved
+          | h@(Holding _ (Just cid) _ _) <- resolved
           ]
 
     mergeHolding h1 h2 =

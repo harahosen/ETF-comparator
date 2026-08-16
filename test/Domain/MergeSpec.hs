@@ -11,17 +11,17 @@ spec = do
     describe "mergeResolvedHoldings" $ do
       it "merges holdings with same canonical ID" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL1") (Just (CanonicalAssetId "AAPL")) (Weight 0.3)
-              , Holding (RawAssetId "AAPL2") (Just (CanonicalAssetId "AAPL")) (Weight 0.3)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.4)
+              [ Holding (RawAssetId "AAPL1") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.3)
+              , Holding (RawAssetId "AAPL2") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.3)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.4)
               ]
         let merged = mergeResolvedHoldings etf
         length (etfHoldings merged) `shouldBe` 2
 
       it "sums weights when merging holdings" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL1") (Just (CanonicalAssetId "AAPL")) (Weight 0.3)
-              , Holding (RawAssetId "AAPL2") (Just (CanonicalAssetId "AAPL")) (Weight 0.3)
+              [ Holding (RawAssetId "AAPL1") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.3)
+              , Holding (RawAssetId "AAPL2") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.3)
               ]
         let merged = mergeResolvedHoldings etf
         let aaplHoldings = filter (\h -> holdingCanonicalId h == Just (CanonicalAssetId "AAPL")) (etfHoldings merged)
@@ -31,8 +31,8 @@ spec = do
 
       it "preserves holdings without canonical ID" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.6)
-              , Holding (RawAssetId "UNKNOWN") Nothing (Weight 0.4)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.6)
+              , Holding (RawAssetId "UNKNOWN") Nothing Nothing (Weight 0.4)
               ]
         let merged = mergeResolvedHoldings etf
         length (etfHoldings merged) `shouldBe` 2
@@ -41,24 +41,24 @@ spec = do
 
       it "does not merge holdings with different canonical IDs" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.6)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.4)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.6)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.4)
               ]
         let merged = mergeResolvedHoldings etf
         length (etfHoldings merged) `shouldBe` 2
 
       it "handles ETF with only unresolved holdings" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "UNKNOWN1") Nothing (Weight 0.6)
-              , Holding (RawAssetId "UNKNOWN2") Nothing (Weight 0.4)
+              [ Holding (RawAssetId "UNKNOWN1") Nothing Nothing (Weight 0.6)
+              , Holding (RawAssetId "UNKNOWN2") Nothing Nothing (Weight 0.4)
               ]
         let merged = mergeResolvedHoldings etf
         length (etfHoldings merged) `shouldBe` 2
 
       it "handles ETF with only resolved holdings" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.6)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.4)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.6)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.4)
               ]
         let merged = mergeResolvedHoldings etf
         length (etfHoldings merged) `shouldBe` 2
@@ -66,7 +66,7 @@ spec = do
 
       it "preserves fund ID" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.6)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.6)
               ]
         let merged = mergeResolvedHoldings etf
         etfFundId merged `shouldBe` FundId "TEST"

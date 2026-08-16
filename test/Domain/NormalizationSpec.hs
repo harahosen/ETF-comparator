@@ -12,8 +12,8 @@ spec = do
     describe "normalizeETF" $ do
       it "normalizes ETF with weights summing to 1" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.6)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.4)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.6)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.4)
               ]
         case normalizeETF etf of
           Right (NormalizedETF m) -> sum (map unWeight (M.elems m)) `shouldSatisfy` (\total -> abs (total - 1.0) < 1e-6)
@@ -21,8 +21,8 @@ spec = do
 
       it "normalizes ETF with weights not summing to 1" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.3)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.3)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.3)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.3)
               ]
         case normalizeETF etf of
           Right (NormalizedETF m) -> sum (map unWeight (M.elems m)) `shouldSatisfy` (\total -> abs (total - 1.0) < 1e-6)
@@ -30,16 +30,16 @@ spec = do
 
       it "rejects ETF with zero total weight" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.0)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.0)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.0)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.0)
               ]
         normalizeETF etf `shouldBe` Left ZeroTotalWeight
 
     describe "normalizeETFWithTolerance" $ do
       it "accepts ETF with weights within tolerance" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.6000005)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.3999995)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.6000005)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.3999995)
               ]
         case normalizeETFWithTolerance 1e-4 etf of
           Right (NormalizedETF m) -> do
@@ -49,8 +49,8 @@ spec = do
 
       it "normalizes ETF with weights outside tolerance" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.3)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.3)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.3)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.3)
               ]
         case normalizeETFWithTolerance 1e-6 etf of
           Right (NormalizedETF m) -> sum (map unWeight (M.elems m)) `shouldSatisfy` (\total -> abs (total - 1.0) < 1e-6)
@@ -59,14 +59,14 @@ spec = do
     describe "isNormalized" $ do
       it "returns True for normalized ETF" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.6)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.4)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.6)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.4)
               ]
         isNormalized etf `shouldBe` True
 
       it "returns False for non-normalized ETF" $ do
         let etf = RawETF (FundId "TEST")
-              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) (Weight 0.3)
-              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) (Weight 0.3)
+              [ Holding (RawAssetId "AAPL") (Just (CanonicalAssetId "AAPL")) Nothing (Weight 0.3)
+              , Holding (RawAssetId "MSFT") (Just (CanonicalAssetId "MSFT")) Nothing (Weight 0.3)
               ]
         isNormalized etf `shouldBe` False

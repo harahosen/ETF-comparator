@@ -2,6 +2,7 @@ module Parser.Common.ParserHelpers
   ( normalizeHeader
   , findColumnByPriority
   , parseDouble
+  , safeIndex
   ) where
 
 import Data.Char (isAlphaNum)
@@ -30,3 +31,7 @@ parseDouble :: Text -> Either String Double
 parseDouble t =
   maybe (Left ("Invalid numeric value: " <> T.unpack t)) Right
         (readMaybe (T.unpack t))
+
+safeIndex :: Int -> [a] -> Maybe a
+safeIndex i xs =
+  if i < length xs then Just (xs !! i) else Nothing
