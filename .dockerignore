@@ -5,8 +5,8 @@ dist/
 *.cabal
 
 # Generated output
-Input/
-Output/
+input/
+output/
 test/output/
 test/input/empty-mapping.csv
 

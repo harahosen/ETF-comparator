@@ -17,8 +17,8 @@ instance FromJSON Config
 
 defaultConfig :: Config
 defaultConfig = Config
-  { assetMappingFile = "Input/asset-mapping.csv"
-  , outputDirectory = "Output"
+  { assetMappingFile = "input/asset-mapping.csv"
+  , outputDirectory = "output"
   , tolerance       = 1e-6
   }
 

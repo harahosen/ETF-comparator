@@ -1,3 +1,3 @@
-assetMappingFile: "Input/asset-mapping.csv"
-outputDirectory: "Output"
+assetMappingFile: "input/asset-mapping.csv"
+outputDirectory: "output"
 tolerance: 0.000001

@@ -15,7 +15,7 @@ stack build
 ## Run
 
 ```bash
-stack exec etf-comparator -- Input/YYYYMMDD-IS-<name>.csv Input/YYYYMMDD-SS-<name>.xlsx
+stack exec etf-comparator -- input/YYYYMMDD-IS-<name>.csv input/YYYYMMDD-SS-<name>.xlsx
 ```
 
 or, using a customizable config file:
@@ -39,9 +39,9 @@ The comparator accepts both raw and pre-adapted files. Raw iShares/State Street 
 
 - **Weight values**: plain numbers with `.` as decimal separator. Percent signs, commas as thousand/decimal separators, or extra whitespace will fail. Weights do not need to sum to `1.0`; resolved holdings are renormalized to `1.0` when their total is not within the configured `tolerance`.
 
-- `Input/asset-mapping.csv` is optional. When absent, raw asset ids are treated as canonical.
+- `input/asset-mapping.csv` is optional. When absent, raw asset ids are treated as canonical.
 
-See `Input/` for sample files.
+See `input/` for sample files.
 
 ## How it works
 
@@ -56,18 +56,18 @@ See `Input/` for sample files.
 `etf-comparator` can be configured through a YAML file (see `--config` above). Available fields:
 
 - `assetMappingFile`: path to an optional `raw,canonical` CSV. When missing, raw ids are treated as canonical.
-- `outputDirectory`: directory where result files are written (`Output` by default).
+- `outputDirectory`: directory where result files are written (`output` by default).
 - `tolerance`: maximum allowed deviation of total weight from `1.0` before renormalization is triggered.
 
 ## Output
 
-On success, a `Output/comparison-<timestamp>.csv` file is created:
+On success, a `output/comparison-<timestamp>.csv` file is created:
 
 ```csv
 timestamp,etf_file_1,etf_file_2,cosine_similarity,weighted_jaccard_similarity,overlap_ratio
 ```
 
-On failure, an `Output/error-<timestamp>.csv` file is created:
+On failure, an `output/error-<timestamp>.csv` file is created:
 
 ```csv
 timestamp,error_file,error_list
@@ -87,7 +87,7 @@ Run the comparator on raw or adapted iShares/State Street files:
 
 ```bash
 docker run --rm -v "$PWD:/data" etf-comparator etf-comparator \
-  /data/Input/YYYYMMDD-IS-<name>.csv /data/Input/YYYYMMDD-SS-<name>.xlsx
+  /data/input/YYYYMMDD-IS-<name>.csv /data/input/YYYYMMDD-SS-<name>.xlsx
 ```
 
 The command writes its output into the mounted `/data` directory.

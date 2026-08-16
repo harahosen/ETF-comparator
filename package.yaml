@@ -83,7 +83,7 @@ tests:
 executables:
   etf-comparator:
     main: Main.hs
-    source-dirs: app/etf-comparator
+    source-dirs: app
     ghc-options:
       - -threaded
       - -rtsopts
