@@ -14,27 +14,19 @@ stack build
 
 ## Run
 
-**File reconciliation (optional, could be done manually)**
-
 ```bash
-stack exec reconcile -- Input/YYYYMMDD-IS-<name>.csv Input/YYYYMMDD-SS-<name>.xlsx
+stack exec etf-comparator -- Input/YYYYMMDD-IS-<name>.csv Input/YYYYMMDD-SS-<name>.xlsx
 ```
 
-**Comparison, using or not a customizable config file** 
-
-```bash
-stack exec etf-comparator -- Input/YYYYMMDD-IS-<name>-adapted.csv Input/YYYYMMDD-SS-<name>-adapted.csv
-```
-or
+or, using a customizable config file:
 
 ```bash
 stack exec etf-comparator -- --config config.yaml <file1> <file2>
 ```
 
+## Preparing input files
 
-## Preparing CSV files for the comparison
-
-`reconcile` must be run first to adapt raw `IS` and `SS` files into `etf-comparator` input.
+The comparator accepts both raw and pre-adapted files. Raw iShares/State Street files can be in `.csv` or `.xlsx` format and are reconciled automatically before comparison. Custom files must be `.csv`.
 
 - **Input filenames**: `YYYYMMDD-PROVIDER-<name>.csv` or `.xlsx` where `PROVIDER` is:
   - `IS` — iShares
@@ -53,10 +45,11 @@ See `Input/` for sample files.
 
 ## How it works
 
-1. **Reconcile**: `reconcile` reads two raw holding lists (CSV or XLSX), auto-detects the header row by looking for asset, name and weight columns, then matches the secondary fund's names to the primary fund's tickers. It writes `ticker,weight` CSV files ready for the comparator.
-2. **Resolve**: `etf-comparator` loads each adapted file, resolves every raw asset id to a canonical one and falls back to the raw id itself when no mapping exists.
-3. **Merge & normalize**: duplicate canonical ids are summed and weights are renormalized to `1.0` if their total deviates by more than the configured `tolerance`.
-4. **Compare**: the two normalized funds are compared with cosine similarity, weighted Jaccard similarity and overlap ratio.
+1. **Ingestion**: `etf-comparator` loads both holding lists (CSV or XLSX) and turns them into in-memory tables.
+2. **Reconcile**: it auto-detects the header row in each table by looking for asset, name and weight columns, then matches the secondary fund's names to the primary fund's tickers, producing two `ticker,weight` tables.
+3. **Resolve**: each reconciled asset id is mapped to a canonical one; when no mapping exists, the reconciled id itself is used.
+4. **Merge & normalize**: duplicate canonical ids are summed and weights are renormalized to `1.0` if their total deviates by more than the configured `tolerance`.
+5. **Compare**: the two normalized funds are compared with cosine similarity, weighted Jaccard similarity and overlap ratio.
 
 ## Configuration
 
@@ -84,24 +77,17 @@ Error rows contain a JSON-escaped list of issues such as invalid filenames, miss
 
 ## Docker
 
-A basic `Dockerfile` is provided. Build the image and run the tools inside a container:
+A basic `Dockerfile` is provided. Build the image and run the tool inside a container:
 
 ```bash
 docker build -t etf-comparator .
 ```
 
-Run `reconcile` on raw iShares/State Street files:
-
-```bash
-docker run --rm -v "$PWD/Input:/data/Input" etf-comparator reconcile \
-  /data/Input/YYYYMMDD-IS-<name>.csv /data/Input/YYYYMMDD-SS-<name>.xlsx /data/Input
-```
-
-Run the comparator on adapted files:
+Run the comparator on raw or adapted iShares/State Street files:
 
 ```bash
 docker run --rm -v "$PWD:/data" etf-comparator etf-comparator \
-  /data/Input/YYYYMMDD-IS-<name>-adapted.csv /data/Input/YYYYMMDD-SS-<name>-adapted.csv
+  /data/Input/YYYYMMDD-IS-<name>.csv /data/Input/YYYYMMDD-SS-<name>.xlsx
 ```
 
-Both commands write their output into the mounted `/data` directory.
+The command writes its output into the mounted `/data` directory.

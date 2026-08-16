@@ -40,6 +40,7 @@ library:
     - Ingestion.FileLoader
     - Ingestion.FileMeta
     - Ingestion.MappingLoader
+    - Ingestion.Reconcile
     - Ingestion.ResolveAssetId
     - Ingestion.Router
     - Ingestion.TableLoader
@@ -51,6 +52,7 @@ library:
     - Parser.Preprocess.Custom
     - Parser.Preprocess.IShares
     - Parser.Preprocess.StateStreet
+    - Parser.Reconciled
     - Parser.StateStreet
     - Service.Config
     - Service.OutputWriter
@@ -89,17 +91,3 @@ executables:
     dependencies:
       - etf-comparator
       - base
-
-  reconcile:
-    main: Main.hs
-    source-dirs: app/reconcile
-    dependencies:
-      - etf-comparator
-      - base
-      - bytestring
-      - cassava
-      - containers
-      - directory
-      - filepath
-      - text
-      - vector
